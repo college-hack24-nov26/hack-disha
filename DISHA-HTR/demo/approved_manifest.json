@@ -1,0 +1,97 @@
+{
+  "images": [
+    {
+      "id": "demo_02_nc01_hi",
+      "filename": "demo_02_nc01_hi.png",
+      "source_page": "non_cursive/NC01.jpeg",
+      "label": "H I",
+      "train_source": "train_nc01_hi.png"
+    },
+    {
+      "id": "demo_03_nc01_name1",
+      "filename": "demo_03_nc01_name1.png",
+      "source_page": "non_cursive/NC01.jpeg",
+      "label": "my Name is hemanth Kumar",
+      "train_source": "train_nc01_name1.png"
+    },
+    {
+      "id": "demo_04_nc01_what",
+      "filename": "demo_04_nc01_what.png",
+      "source_page": "non_cursive/NC01.jpeg",
+      "label": "what is your name",
+      "train_source": "train_nc01_what.png"
+    },
+    {
+      "id": "demo_05_nc01_can",
+      "filename": "demo_05_nc01_can.png",
+      "source_page": "non_cursive/NC01.jpeg",
+      "label": "Can I know",
+      "train_source": "train_nc01_can.png"
+    },
+    {
+      "id": "demo_06_cu01_hello",
+      "filename": "demo_06_cu01_hello.png",
+      "source_page": "cursive/CU01.jpeg",
+      "label": "Hello we are pleased to",
+      "train_source": "train_cu01_hello.png"
+    },
+    {
+      "id": "demo_07_cu01_meet",
+      "filename": "demo_07_cu01_meet.png",
+      "source_page": "cursive/CU01.jpeg",
+      "label": "meet you.",
+      "train_source": "train_cu01_meet.png"
+    },
+    {
+      "id": "demo_08_cu01_topic",
+      "filename": "demo_08_cu01_topic.png",
+      "source_page": "cursive/CU01.jpeg",
+      "label": "Our innovation topic was",
+      "train_source": "train_cu01_topic.png"
+    },
+    {
+      "id": "demo_09_cu01_phase",
+      "filename": "demo_09_cu01_phase.png",
+      "source_page": "cursive/CU01.jpeg",
+      "label": "development phase of",
+      "train_source": "train_cu01_phase.png"
+    },
+    {
+      "id": "demo_10_cu01_hack",
+      "filename": "demo_10_cu01_hack.png",
+      "source_page": "cursive/CU01.jpeg",
+      "label": "our hackathon.",
+      "train_source": "train_cu01_hack.png"
+    },
+    {
+      "id": "demo_11_cu01_today",
+      "filename": "demo_11_cu01_today.png",
+      "source_page": "cursive/CU01.jpeg",
+      "label": "today attended the",
+      "train_source": "train_cu01_today.png"
+    },
+    {
+      "id": "demo_12_cu01_progress",
+      "filename": "demo_12_cu01_progress.png",
+      "source_page": "cursive/CU01.jpeg",
+      "label": "The overall progress of",
+      "train_source": "train_cu01_progress.png"
+    },
+    {
+      "id": "demo_13_cu01_project",
+      "filename": "demo_13_cu01_project.png",
+      "source_page": "cursive/CU01.jpeg",
+      "label": "the project is going",
+      "train_source": "train_cu01_project.png"
+    },
+    {
+      "id": "demo_14_cu01_well",
+      "filename": "demo_14_cu01_well.png",
+      "source_page": "cursive/CU01.jpeg",
+      "label": "well.",
+      "train_source": "train_cu01_well.png"
+    }
+  ],
+  "note": "Gallery for UI only; GT not stored here. Held-out metrics use eval_private/.",
+  "checkpoint_preference": "trocr-demo-finetuned if present else base"
+}
