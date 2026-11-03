@@ -1,0 +1,11 @@
+image_filename,category,ground_truth
+non_cursive/NC01.jpeg,non_cursive,
+non_cursive/NC02.jpeg,non_cursive,
+non_cursive/NC03.jpeg,non_cursive,
+non_cursive/NC05.jpeg,non_cursive,
+cursive/CU01.jpeg,cursive,
+cursive/CU03.jpeg,cursive,
+medical_vocabulary/MV01.jpeg,medical_vocabulary,
+medical_vocabulary/MV02.jpeg,medical_vocabulary,
+prescription_style/RX01.jpeg,prescription_style,
+prescription_style/RX02.jpeg,prescription_style,

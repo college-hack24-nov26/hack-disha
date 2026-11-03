@@ -45,3 +45,7 @@ checkpoints/*
 # Sample outputs
 outputs/
 *.png.tmp
+
+# Evaluation run outputs (keep folder; ignore generated artifacts)
+evaluation/results/*
+!evaluation/results/.gitkeep
