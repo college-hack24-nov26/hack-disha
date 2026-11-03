@@ -41,6 +41,25 @@ def paper_clean_line(bgr: np.ndarray, target_h: int = 128) -> np.ndarray:
     return cv2.cvtColor(cleaned, cv2.COLOR_GRAY2RGB)
 
 
+def _elastic_distort(rgb: np.ndarray, rng: np.random.Generator, alpha: float = 6.0, sigma: float = 4.0) -> np.ndarray:
+    """Mild elastic warp (helps HTR generalization; keep alpha/sigma low)."""
+    h, w = rgb.shape[:2]
+    dx = cv2.GaussianBlur((rng.random((h, w)) * 2 - 1).astype(np.float32), (0, 0), sigma) * alpha
+    dy = cv2.GaussianBlur((rng.random((h, w)) * 2 - 1).astype(np.float32), (0, 0), sigma) * alpha
+    xs, ys = np.meshgrid(np.arange(w), np.arange(h))
+    map_x = (xs + dx).astype(np.float32)
+    map_y = (ys + dy).astype(np.float32)
+    fill = int(np.percentile(rgb, 70))
+    return cv2.remap(
+        rgb,
+        map_x,
+        map_y,
+        interpolation=cv2.INTER_LINEAR,
+        borderMode=cv2.BORDER_CONSTANT,
+        borderValue=(fill, fill, fill),
+    )
+
+
 def strong_phone_aug(rgb: np.ndarray, rng: np.random.Generator) -> np.ndarray:
     """Synthetic phone-notebook capture noise for domain fine-tuning."""
     img = rgb.copy()
@@ -50,6 +69,24 @@ def strong_phone_aug(rgb: np.ndarray, rng: np.random.Generator) -> np.ndarray:
         angle = float(rng.uniform(-3.5, 3.5))
         M = cv2.getRotationMatrix2D((w / 2, h / 2), angle, 1.0)
         img = cv2.warpAffine(img, M, (w, h), borderValue=(int(np.percentile(img, 70)),) * 3)
+    # Elastic stroke jitter (research: strong for TrOCR HTR)
+    if rng.random() < 0.45 and min(h, w) >= 32:
+        img = _elastic_distort(
+            img,
+            rng,
+            alpha=float(rng.uniform(3.0, 7.0)),
+            sigma=float(rng.uniform(3.0, 5.5)),
+        )
+    # Ink thicken / thin
+    if rng.random() < 0.25:
+        gray = cv2.cvtColor(img, cv2.COLOR_RGB2GRAY)
+        inv = cv2.bitwise_not(gray)
+        k = np.ones((2, 2), np.uint8)
+        if rng.random() < 0.5:
+            inv = cv2.dilate(inv, k, iterations=1)
+        else:
+            inv = cv2.erode(inv, k, iterations=1)
+        img = cv2.cvtColor(cv2.bitwise_not(inv), cv2.COLOR_GRAY2RGB)
     # Brightness / contrast
     if rng.random() < 0.8:
         alpha = float(rng.uniform(0.75, 1.3))

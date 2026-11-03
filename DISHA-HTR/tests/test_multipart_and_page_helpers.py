@@ -16,7 +16,9 @@ from disha_htr.multipart_util import FormFile, parse_multipart  # noqa: E402
 from disha_htr.page_recognize import (  # noqa: E402
     _looks_like_fluent_hallucination,
     _looks_like_letter_pairs,
+    _sanitize_line_text,
 )
+from disha_htr.print_detect import looks_like_printed_text  # noqa: E402
 
 
 class TestMultipart(unittest.TestCase):
@@ -82,6 +84,34 @@ class TestHallucinationGuards(unittest.TestCase):
         self.assertFalse(
             _looks_like_fluent_hallucination("Htq So Ce Dy")
         )
+
+    def test_printed_english_not_wiped(self) -> None:
+        text = "Company: Contoso Healthcare Pvt Ltd"
+        _disp, combined, err = _sanitize_line_text(text, allow_fluent_english=True)
+        self.assertEqual(combined, text)
+        self.assertEqual(err, "")
+
+
+class TestPrintDetect(unittest.TestCase):
+    def test_sharp_digital_text_detected(self) -> None:
+        import cv2
+
+        img = np.full((200, 640, 3), 255, dtype=np.uint8)
+        cv2.putText(
+            img,
+            "Employment type: Full-time",
+            (20, 110),
+            cv2.FONT_HERSHEY_SIMPLEX,
+            1.1,
+            (0, 0, 0),
+            2,
+            cv2.LINE_AA,
+        )
+        self.assertTrue(looks_like_printed_text(img))
+
+    def test_blank_not_printed(self) -> None:
+        img = np.full((160, 400, 3), 245, dtype=np.uint8)
+        self.assertFalse(looks_like_printed_text(img))
 
 
 if __name__ == "__main__":

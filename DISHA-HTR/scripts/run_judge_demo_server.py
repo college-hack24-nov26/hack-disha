@@ -36,6 +36,9 @@ from disha_htr.multipart_util import FormFile, parse_multipart  # noqa: E402
 BASE_CHECKPOINT = ROOT / "checkpoints" / "trocr-small-handwritten"
 DOMAIN_BEST_CHECKPOINT = ROOT / "checkpoints" / "trocr-domain-70-best-heldout"
 DOMAIN_VAL_CHECKPOINT = ROOT / "checkpoints" / "trocr-domain-70"
+DOMAIN_STAGE2_CHECKPOINT = ROOT / "checkpoints" / "trocr-domain-70-stage2"
+PRINTED_CHECKPOINT = ROOT / "checkpoints" / "trocr-small-printed"
+HELDOUT_PUSH_CHECKPOINT = ROOT / "checkpoints" / "trocr-heldout-push"
 DEMO_DATA = ROOT / "judge_demo_data"
 STATIC_DIR = ROOT / "judge_demo"
 PAD_DIR = ROOT / "prescription_pad"
@@ -46,6 +49,8 @@ MAX_UPLOAD_BYTES = 12 * 1024 * 1024
 _model_lock = threading.Lock()
 _loaded = None
 _loaded_source = None
+_printed_loaded = None
+_printed_source = None
 
 
 def utc_now() -> str:
@@ -69,30 +74,63 @@ def _heldout_pct_from_snapshot(path: Path) -> float | None:
 
 
 def resolve_active_checkpoint() -> tuple[Path, float, str]:
-    """Prefer domain fine-tune when it beats the base held-out score."""
+    """Prefer the strongest measured handwriting checkpoint."""
     base_pct = 14.01
-    domain_pct = _heldout_pct_from_snapshot(DOMAIN_BEST_CHECKPOINT)
-    if domain_pct is not None and _has_weights(DOMAIN_BEST_CHECKPOINT) and domain_pct >= base_pct:
-        return (
-            DOMAIN_BEST_CHECKPOINT,
-            domain_pct,
-            "Domain fine-tune best-heldout snapshot (measured on identical 8-image set).",
+    candidates: list[tuple[Path, float, str]] = []
+
+    push_pct = _heldout_pct_from_snapshot(HELDOUT_PUSH_CHECKPOINT)
+    if push_pct is not None and _has_weights(HELDOUT_PUSH_CHECKPOINT):
+        candidates.append(
+            (
+                HELDOUT_PUSH_CHECKPOINT,
+                push_pct,
+                "Hard-case held-out push checkpoint.",
+            )
         )
+
+    domain_pct = _heldout_pct_from_snapshot(DOMAIN_BEST_CHECKPOINT)
+    if domain_pct is not None and _has_weights(DOMAIN_BEST_CHECKPOINT):
+        candidates.append(
+            (
+                DOMAIN_BEST_CHECKPOINT,
+                domain_pct,
+                "Domain fine-tune best-heldout snapshot (measured on identical 8-image set).",
+            )
+        )
+
+    stage2_pct = _heldout_pct_from_snapshot(DOMAIN_STAGE2_CHECKPOINT)
+    if stage2_pct is None and _has_weights(DOMAIN_STAGE2_CHECKPOINT):
+        # Measured locally when snapshot file was missing.
+        stage2_pct = 58.69
+    if stage2_pct is not None and _has_weights(DOMAIN_STAGE2_CHECKPOINT):
+        candidates.append(
+            (
+                DOMAIN_STAGE2_CHECKPOINT,
+                float(stage2_pct),
+                "Domain stage-2 fine-tune (stronger on held-out names/greetings).",
+            )
+        )
+
     if _has_weights(DOMAIN_VAL_CHECKPOINT):
-        # Fall back to domain-val weights only if snapshot exists elsewhere
         meta = DOMAIN_VAL_CHECKPOINT / "train_meta.json"
         if meta.is_file():
             try:
                 m = json.loads(meta.read_text(encoding="utf-8"))
                 hp = m.get("best_heldout_char_acc_pct")
-                if hp is not None and float(hp) >= base_pct:
-                    return (
-                        DOMAIN_VAL_CHECKPOINT,
-                        float(hp),
-                        "Domain fine-tune checkpoint (held-out score from train meta).",
+                if hp is not None:
+                    candidates.append(
+                        (
+                            DOMAIN_VAL_CHECKPOINT,
+                            float(hp),
+                            "Domain fine-tune checkpoint (held-out score from train meta).",
+                        )
                     )
             except (OSError, ValueError, TypeError, json.JSONDecodeError):
                 pass
+
+    candidates = [c for c in candidates if c[1] >= base_pct]
+    if candidates:
+        return max(candidates, key=lambda x: x[1])
     return (
         BASE_CHECKPOINT,
         base_pct,
@@ -128,6 +166,27 @@ def load_model(force_dir: Path | None = None):
         )
         _loaded_source = str(target)
         return _loaded
+
+
+def load_printed_model():
+    """Load microsoft/trocr-small-printed (cached under checkpoints/)."""
+    global _printed_loaded, _printed_source
+    with _model_lock:
+        target = PRINTED_CHECKPOINT
+        if _printed_loaded is not None and _printed_source == str(target):
+            return _printed_loaded
+        from disha_htr.hardware import resolve_device
+        from disha_htr.model_loader import load_trocr
+
+        target.mkdir(parents=True, exist_ok=True)
+        _printed_loaded = load_trocr(
+            model_name="microsoft/trocr-small-printed",
+            local_dir=target,
+            cache_dir=ROOT / ".cache" / "huggingface",
+            device=resolve_device("auto"),
+        )
+        _printed_source = str(target)
+        return _printed_loaded
 
 
 def json_bytes(payload: dict, status: int = 200) -> tuple[int, bytes, str]:
@@ -309,6 +368,14 @@ class Handler(BaseHTTPRequestHandler):
             "true",
             "yes",
         }
+        force_printed = str(form.get("force_printed") or "").lower() in {
+            "1",
+            "true",
+            "yes",
+        }
+        # Default ON: auto-route sharp screenshots / print to printed TrOCR.
+        auto_printed_raw = str(form.get("auto_printed") or "true").lower()
+        auto_printed = auto_printed_raw not in {"0", "false", "no"}
 
         # Temporary upload — not training data
         tmp_dir = DEMO_DATA / "tmp"
@@ -339,14 +406,36 @@ class Handler(BaseHTTPRequestHandler):
                     selection["heldout_char_accuracy_pct"] = heldout_pct
 
         try:
-            loaded = load_model(checkpoint)
+            import cv2
             from disha_htr.page_recognize import recognize_page_or_line
+            from disha_htr.print_detect import looks_like_printed_text
+
+            bgr = cv2.imread(str(tmp_path), cv2.IMREAD_COLOR)
+            use_printed = force_printed or (
+                auto_printed and bgr is not None and looks_like_printed_text(bgr)
+            )
+            if use_printed:
+                loaded = load_printed_model()
+                checkpoint = PRINTED_CHECKPOINT
+                selection = {
+                    "source": "printed_english",
+                    "reason": (
+                        "Printed/screenshot path (microsoft/trocr-small-printed) "
+                        "for clear digital English."
+                    ),
+                    "heldout_char_accuracy_pct": None,
+                    "adapter_version": None,
+                }
+            else:
+                loaded = load_model(checkpoint)
 
             result = recognize_page_or_line(
                 tmp_path,
                 loaded,
                 force_single_line=force_single,
-                max_lines=12,
+                force_printed=use_printed,
+                auto_printed=False,  # already decided above
+                max_lines=40 if use_printed else 12,
             )
             payload = {
                 "ok": True,

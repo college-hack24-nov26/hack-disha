@@ -217,6 +217,14 @@
     const fd = new FormData();
     fd.append("image", f, f.name);
     fd.append("force_single_line", $("recForceSingle").checked ? "true" : "false");
+    fd.append(
+      "force_printed",
+      $("recForcePrinted") && $("recForcePrinted").checked ? "true" : "false"
+    );
+    fd.append(
+      "auto_printed",
+      !$("recAutoPrinted") || $("recAutoPrinted").checked ? "true" : "false"
+    );
 
     const controller = new AbortController();
     const timeoutMs = 180000;
