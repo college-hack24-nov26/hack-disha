@@ -1,11 +1,11 @@
 image_filename,category,ground_truth
-non_cursive/NC01.jpeg,non_cursive,
-non_cursive/NC02.jpeg,non_cursive,
-non_cursive/NC03.jpeg,non_cursive,
-non_cursive/NC05.jpeg,non_cursive,
-cursive/CU01.jpeg,cursive,
-cursive/CU03.jpeg,cursive,
-medical_vocabulary/MV01.jpeg,medical_vocabulary,
-medical_vocabulary/MV02.jpeg,medical_vocabulary,
-prescription_style/RX01.jpeg,prescription_style,
-prescription_style/RX02.jpeg,prescription_style,
+non_cursive/NC01.jpeg,non_cursive,"""HI.HEMANTH.my name is hemanth kumar .my name is hemanth kumar.A B a. b. what is your name . How are you . Can I know  """
+non_cursive/NC02.jpeg,non_cursive,my name is sankalp .i am learning mern.stack web development .stack web development .i am ghatboard tq. Humnabd bidar dist. Karnataka 585418. I have .D. started practicing. DSA questions I feel . Happy when I am about . Think about sloution .
+non_cursive/NC03.jpeg,non_cursive,"""my name is sankalp .i am learning mern.stack web development .stack web development .i am ghatboard tq. Humnabd bidar dist. Karnataka 585418. I have .D. started practicing. DSA questions I feel . Happy when I am about . Think about sloution ."""
+non_cursive/NC05.jpeg,non_cursive,"""HI.HEMANTH.my name is hemanth kumar .my name is hemanth kumar.A B a. b. what is your name . How are you . Can I know  """
+cursive/CU01.jpeg,cursive,""" Hello we are pleased to Meet you. Our innovation topic was Kaamdo.. we are currently at the development phase of our hackthon. today i attended teh hackthon . the overall progress of the project is going well.. """
+cursive/CU03.jpeg,cursive,""" Hello we are pleased to Meet you. Our innovation topic was Kaamdo.. we are currently at the development phase of our hackthon. today i attended teh hackthon . the overall progress of the project is going well.. """
+medical_vocabulary/MV01.jpeg,medical_vocabulary,""" Medical  vocabulary. Hyper tension and diabetes melits. paracetamol and amoxilin . paracetamol and amoxilin.blood   20 . w. glucose . 40  30. Glucose . data mg pg .og ag mg ng .kg .80."""
+medical_vocabulary/MV02.jpeg,medical_vocabulary,"""my name is sankalp .i am learning mern.stack web development .stack web development .i am ghatboard tq. Humnabd bidar dist. Karnataka 585418. I have .D. started practicing. DSA questions I feel . Happy when I am about . Think about sloution ."""
+prescription_style/RX01.jpeg,prescription_style,""" Medical  vocabulary. Hyper tension and diabetes melits. paracetamol and amoxilin . paracetamol and amoxilin.blood   20 . w. glucose . 40  30. Glucose . data mg pg .og ag mg ng .kg .80."""
+prescription_style/RX02.jpeg,prescription_style,""" Medical  vocabulary. Hyper tension and diabetes melits. paracetamol and amoxilin . paracetamol and amoxilin.blood   20 . w. glucose . 40  30. Glucose . data mg pg .og ag mg ng .kg .80."""

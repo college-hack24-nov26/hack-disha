@@ -22,6 +22,7 @@ sys.path.insert(0, str(ROOT / "src"))
 from disha_htr.eval_data import (  # noqa: E402
     CATEGORIES,
     discover_eval_images,
+    discover_line_crop_images,
     ensure_ground_truth_template,
     has_usable_ground_truth,
     load_ground_truth_csv,
@@ -39,6 +40,7 @@ from disha_htr.metrics import (  # noqa: E402
 PREDICTION_FIELDS = [
     "image_filename",
     "category",
+    "source_page",
     "ground_truth",
     "prediction",
     "inference_time_s",
@@ -186,18 +188,29 @@ def _format_report(metrics: dict[str, Any], predictions_path: Path) -> str:
 def main() -> int:
     parser = argparse.ArgumentParser(description="DISHA-HTR automated evaluation")
     parser.add_argument(
+        "--mode",
+        choices=["pages", "lines"],
+        default="pages",
+        help="pages=full images under evaluation/images; lines=crops under evaluation/lines",
+    )
+    parser.add_argument(
         "--images-root",
-        default=str(ROOT / "evaluation" / "images"),
-        help="Root containing category subfolders",
+        default=None,
+        help="Root containing category subfolders (default depends on --mode)",
     )
     parser.add_argument(
         "--ground-truth",
-        default=str(ROOT / "evaluation" / "ground_truth" / "transcriptions.csv"),
+        default=None,
         help="Ground-truth CSV path (created/extended if missing; never overwrites GT text)",
     )
     parser.add_argument(
+        "--manifest",
+        default=str(ROOT / "evaluation" / "lines" / "crops_manifest.csv"),
+        help="Line-crop manifest (used when --mode lines)",
+    )
+    parser.add_argument(
         "--results-dir",
-        default=str(ROOT / "evaluation" / "results"),
+        default=None,
         help="Output directory for predictions.csv, metrics.json, evaluation_report.txt",
     )
     parser.add_argument("--device", default="auto", choices=["auto", "cuda", "cpu"])
@@ -237,17 +250,38 @@ def main() -> int:
 
     os.chdir(ROOT)
     logger = setup_logging(level="INFO", log_dir=ROOT / "logs")
-    logger.info("=== DISHA HTR evaluation ===")
+    logger.info("=== DISHA HTR evaluation (mode=%s) ===", args.mode)
 
-    images_root = Path(args.images_root)
-    gt_path = Path(args.ground_truth)
-    results_dir = Path(args.results_dir)
+    if args.mode == "lines":
+        images_root = Path(
+            args.images_root or (ROOT / "evaluation" / "lines")
+        )
+        gt_path = Path(
+            args.ground_truth
+            or (ROOT / "evaluation" / "ground_truth" / "line_transcriptions.csv")
+        )
+        results_dir = Path(
+            args.results_dir or (ROOT / "evaluation" / "results" / "lines")
+        )
+        images = discover_line_crop_images(
+            images_root, manifest_path=Path(args.manifest)
+        )
+        ensure_ground_truth_template(gt_path, images, include_source_page=True)
+    else:
+        images_root = Path(
+            args.images_root or (ROOT / "evaluation" / "images")
+        )
+        gt_path = Path(
+            args.ground_truth
+            or (ROOT / "evaluation" / "ground_truth" / "transcriptions.csv")
+        )
+        results_dir = Path(args.results_dir or (ROOT / "evaluation" / "results"))
+        images = discover_eval_images(images_root)
+        ensure_ground_truth_template(gt_path, images)
+
     results_dir.mkdir(parents=True, exist_ok=True)
-
-    images = discover_eval_images(images_root)
     logger.info("Discovered %d evaluation image(s) under %s", len(images), images_root)
 
-    ensure_ground_truth_template(gt_path, images)
     gt_map = load_ground_truth_csv(gt_path)
 
     if args.template_only:
@@ -301,10 +335,16 @@ def main() -> int:
         gt_row = gt_map.get(img.image_filename)
         usable_gt = has_usable_ground_truth(gt_row)
         gt_text = gt_row.ground_truth if usable_gt else None
+        source_page = ""
+        if gt_row is not None and gt_row.source_page:
+            source_page = gt_row.source_page
+        elif img.source_page:
+            source_page = img.source_page
 
         row: dict[str, Any] = {
             "image_filename": img.image_filename,
             "category": img.category,
+            "source_page": source_page,
             "ground_truth": gt_text if gt_text is not None else "",
             "prediction": "",
             "inference_time_s": "",

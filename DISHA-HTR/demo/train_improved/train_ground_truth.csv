@@ -1,0 +1,33 @@
+image_filename,source_page,ground_truth,sha16
+imp_cu01_hello.png,cursive/CU01.jpeg,Hello we are pleased to,e7fd5482f24da5a9
+imp_cu01_meet.png,cursive/CU01.jpeg,meet you.,8c09c040b0301736
+imp_cu01_topic.png,cursive/CU01.jpeg,Our innovation topic was,798fb028002f0797
+imp_cu01_phase.png,cursive/CU01.jpeg,development phase of,41dfced9948589ce
+imp_cu01_hack.png,cursive/CU01.jpeg,our hackathon.,5069de011a0c3189
+imp_cu01_today.png,cursive/CU01.jpeg,today attended the,9a02d91ec22f070f
+imp_cu01_progress.png,cursive/CU01.jpeg,The overall progress of,c671f582e28a08f0
+imp_cu01_project.png,cursive/CU01.jpeg,the project is going,700115e969e52d7c
+imp_cu01_well.png,cursive/CU01.jpeg,well.,645df113e03f1460
+imp_nc01_name_lower.png,non_cursive/NC01.jpeg,my Name is hemanth Kumar,5aa9fc4554745267
+imp_nc01_name_mixed.png,non_cursive/NC01.jpeg,my name IS HEMANTH kumar,5fd9e0fa054af42f
+imp_nc01_aba.png,non_cursive/NC01.jpeg,A B a,1e17c69040d8b6a4
+imp_nc01_what.png,non_cursive/NC01.jpeg,what is your name,1abbdd09e27845ee
+imp_nc01_can.png,non_cursive/NC01.jpeg,Can I know,c5e67d8b24184960
+imp_nc01_hi.png,non_cursive/NC01.jpeg,H I,18f062ca3237d981
+imp_nc02_humnabad.png,non_cursive/NC02.jpeg,Humnabad bidar dist,c67d395db352c40f
+imp_nc02_think.png,non_cursive/NC02.jpeg,Think about the solution.,2b70bd5d75bf030c
+imp_nc02_sankalp.png,non_cursive/NC02.jpeg,My name is Sankalp,c63d46b001e97f45
+imp_nc02_mern.png,non_cursive/NC02.jpeg,I am learnig mern,aee6505c976962f5
+imp_nc02_stack.png,non_cursive/NC02.jpeg,Stack web development.,550e1bc5a87d0cf2
+imp_nc05_name1.png,non_cursive/NC05.jpeg,my Name is hemanth Kumar,ed066e92bd6b5aa5
+imp_nc05_name2.png,non_cursive/NC05.jpeg,my Name IS HEMANTH Kumar,20dedf3c05bf4922
+imp_nc05_b.png,non_cursive/NC05.jpeg,b,548dad2bc829c769
+imp_nc05_what.png,non_cursive/NC05.jpeg,what is your name,97d84533a3beeeb3
+imp_nc05_can.png,non_cursive/NC05.jpeg,Can I know,3479b5ec7f53fb78
+imp_mv01_title.png,medical_vocabulary/MV01.jpeg,medical vocabulary,9a1615cce32a482a
+imp_mv01_hyper.png,medical_vocabulary/MV01.jpeg,Hypertension and diabetes mellitus,7849635d03ea8b73
+imp_mv01_para1.png,medical_vocabulary/MV01.jpeg,paracetamol and amoxilin,5eb0b07591fce893
+imp_mv01_para2.png,medical_vocabulary/MV01.jpeg,paracetramal and amoxicillin,9f53001c30a822f7
+imp_mv01_blood.png,medical_vocabulary/MV01.jpeg,Blood 20,6b364e1de5898870
+imp_mv01_data.png,medical_vocabulary/MV01.jpeg,data mg pg,2ba383a3b0280bd0
+imp_mv01_kg.png,medical_vocabulary/MV01.jpeg,kg,c19672348a3f2189

@@ -1,0 +1,185 @@
+image_filename,ground_truth,split,source
+hard_000.png,how are you,val,synthetic_hardcase
+hard_001.png,how are you,train,synthetic_hardcase
+hard_002.png,how are you,train,synthetic_hardcase
+hard_003.png,how are you,train,synthetic_hardcase
+hard_004.png,How are you,train,synthetic_hardcase
+hard_005.png,How are you,train,synthetic_hardcase
+hard_006.png,How are you,train,synthetic_hardcase
+hard_007.png,How are you,train,synthetic_hardcase
+hard_008.png,how are You,train,synthetic_hardcase
+hard_009.png,how are You,val,synthetic_hardcase
+hard_010.png,how are You,train,synthetic_hardcase
+hard_011.png,how are You,train,synthetic_hardcase
+hard_012.png,How are You?,train,synthetic_hardcase
+hard_013.png,How are You?,train,synthetic_hardcase
+hard_014.png,How are You?,train,synthetic_hardcase
+hard_015.png,How are You?,train,synthetic_hardcase
+hard_016.png,how r you,train,synthetic_hardcase
+hard_017.png,how r you,train,synthetic_hardcase
+hard_018.png,how r you,val,synthetic_hardcase
+hard_019.png,how r you,train,synthetic_hardcase
+hard_020.png,HEMANTH,train,synthetic_hardcase
+hard_021.png,HEMANTH,train,synthetic_hardcase
+hard_022.png,HEMANTH,train,synthetic_hardcase
+hard_023.png,HEMANTH,train,synthetic_hardcase
+hard_024.png,Hemanth,train,synthetic_hardcase
+hard_025.png,Hemanth,train,synthetic_hardcase
+hard_026.png,Hemanth,train,synthetic_hardcase
+hard_027.png,Hemanth,val,synthetic_hardcase
+hard_028.png,SANKALP,train,synthetic_hardcase
+hard_029.png,SANKALP,train,synthetic_hardcase
+hard_030.png,SANKALP,train,synthetic_hardcase
+hard_031.png,SANKALP,train,synthetic_hardcase
+hard_032.png,ASHWIN,train,synthetic_hardcase
+hard_033.png,ASHWIN,train,synthetic_hardcase
+hard_034.png,ASHWIN,train,synthetic_hardcase
+hard_035.png,ASHWIN,train,synthetic_hardcase
+hard_036.png,PRIYA,val,synthetic_hardcase
+hard_037.png,PRIYA,train,synthetic_hardcase
+hard_038.png,PRIYA,train,synthetic_hardcase
+hard_039.png,PRIYA,train,synthetic_hardcase
+hard_040.png,KARAN,train,synthetic_hardcase
+hard_041.png,KARAN,train,synthetic_hardcase
+hard_042.png,KARAN,train,synthetic_hardcase
+hard_043.png,KARAN,train,synthetic_hardcase
+hard_044.png,ANANYA,train,synthetic_hardcase
+hard_045.png,ANANYA,val,synthetic_hardcase
+hard_046.png,ANANYA,train,synthetic_hardcase
+hard_047.png,ANANYA,train,synthetic_hardcase
+hard_048.png,A B a,train,synthetic_hardcase
+hard_049.png,A B a,train,synthetic_hardcase
+hard_050.png,A B a,train,synthetic_hardcase
+hard_051.png,A B a,train,synthetic_hardcase
+hard_052.png,A B C,train,synthetic_hardcase
+hard_053.png,A B C,train,synthetic_hardcase
+hard_054.png,A B C,val,synthetic_hardcase
+hard_055.png,A B C,train,synthetic_hardcase
+hard_056.png,H I,train,synthetic_hardcase
+hard_057.png,H I,train,synthetic_hardcase
+hard_058.png,H I,train,synthetic_hardcase
+hard_059.png,H I,train,synthetic_hardcase
+hard_060.png,I Have started practicing,train,synthetic_hardcase
+hard_061.png,I Have started practicing,train,synthetic_hardcase
+hard_062.png,I Have started practicing,train,synthetic_hardcase
+hard_063.png,I Have started practicing,val,synthetic_hardcase
+hard_064.png,I have started practicing,train,synthetic_hardcase
+hard_065.png,I have started practicing,train,synthetic_hardcase
+hard_066.png,I have started practicing,train,synthetic_hardcase
+hard_067.png,I have started practicing,train,synthetic_hardcase
+hard_068.png,started practicing,train,synthetic_hardcase
+hard_069.png,started practicing,train,synthetic_hardcase
+hard_070.png,started practicing,train,synthetic_hardcase
+hard_071.png,started practicing,train,synthetic_hardcase
+hard_072.png,happy when I am about,val,synthetic_hardcase
+hard_073.png,happy when I am about,train,synthetic_hardcase
+hard_074.png,happy when I am about,train,synthetic_hardcase
+hard_075.png,happy when I am about,train,synthetic_hardcase
+hard_076.png,DSA Questions I feel,train,synthetic_hardcase
+hard_077.png,DSA Questions I feel,train,synthetic_hardcase
+hard_078.png,DSA Questions I feel,train,synthetic_hardcase
+hard_079.png,DSA Questions I feel,train,synthetic_hardcase
+hard_080.png,Karnataka 585418,train,synthetic_hardcase
+hard_081.png,Karnataka 585418,val,synthetic_hardcase
+hard_082.png,Karnataka 585418,train,synthetic_hardcase
+hard_083.png,Karnataka 585418,train,synthetic_hardcase
+hard_084.png,Bidar 585401,train,synthetic_hardcase
+hard_085.png,Bidar 585401,train,synthetic_hardcase
+hard_086.png,Bidar 585401,train,synthetic_hardcase
+hard_087.png,Bidar 585401,train,synthetic_hardcase
+hard_088.png,Humnabad 585330,train,synthetic_hardcase
+hard_089.png,Humnabad 585330,train,synthetic_hardcase
+hard_090.png,Humnabad 585330,val,synthetic_hardcase
+hard_091.png,Humnabad 585330,train,synthetic_hardcase
+hard_092.png,Bangalore 560001,train,synthetic_hardcase
+hard_093.png,Bangalore 560001,train,synthetic_hardcase
+hard_094.png,Bangalore 560001,train,synthetic_hardcase
+hard_095.png,Bangalore 560001,train,synthetic_hardcase
+hard_096.png,Mysore 570001,train,synthetic_hardcase
+hard_097.png,Mysore 570001,train,synthetic_hardcase
+hard_098.png,Mysore 570001,train,synthetic_hardcase
+hard_099.png,Mysore 570001,val,synthetic_hardcase
+hard_100.png,Gulbarga 585102,train,synthetic_hardcase
+hard_101.png,Gulbarga 585102,train,synthetic_hardcase
+hard_102.png,Gulbarga 585102,train,synthetic_hardcase
+hard_103.png,Gulbarga 585102,train,synthetic_hardcase
+hard_104.png,I am Ghatboral Iq,train,synthetic_hardcase
+hard_105.png,I am Ghatboral Iq,train,synthetic_hardcase
+hard_106.png,I am Ghatboral Iq,train,synthetic_hardcase
+hard_107.png,I am Ghatboral Iq,train,synthetic_hardcase
+hard_108.png,I am Humnabad Iq,val,synthetic_hardcase
+hard_109.png,I am Humnabad Iq,train,synthetic_hardcase
+hard_110.png,I am Humnabad Iq,train,synthetic_hardcase
+hard_111.png,I am Humnabad Iq,train,synthetic_hardcase
+hard_112.png,I am Bidar town,train,synthetic_hardcase
+hard_113.png,I am Bidar town,train,synthetic_hardcase
+hard_114.png,I am Bidar town,train,synthetic_hardcase
+hard_115.png,I am Bidar town,train,synthetic_hardcase
+hard_116.png,my Name is hemanth Kumar,train,synthetic_hardcase
+hard_117.png,my Name is hemanth Kumar,val,synthetic_hardcase
+hard_118.png,my Name is hemanth Kumar,train,synthetic_hardcase
+hard_119.png,my Name is hemanth Kumar,train,synthetic_hardcase
+hard_120.png,my name IS HEMANTH kumar,train,synthetic_hardcase
+hard_121.png,my name IS HEMANTH kumar,train,synthetic_hardcase
+hard_122.png,my name IS HEMANTH kumar,train,synthetic_hardcase
+hard_123.png,my name IS HEMANTH kumar,train,synthetic_hardcase
+hard_124.png,Can I know,train,synthetic_hardcase
+hard_125.png,Can I know,train,synthetic_hardcase
+hard_126.png,Can I know,val,synthetic_hardcase
+hard_127.png,Can I know,train,synthetic_hardcase
+hard_128.png,Hello we are pleased to,train,synthetic_hardcase
+hard_129.png,Hello we are pleased to,train,synthetic_hardcase
+hard_130.png,Hello we are pleased to,train,synthetic_hardcase
+hard_131.png,Hello we are pleased to,train,synthetic_hardcase
+hard_132.png,meet you.,train,synthetic_hardcase
+hard_133.png,meet you.,train,synthetic_hardcase
+hard_134.png,meet you.,train,synthetic_hardcase
+hard_135.png,meet you.,val,synthetic_hardcase
+hard_136.png,how are you,train,synthetic_hardcase
+hard_137.png,How are you,train,synthetic_hardcase
+hard_138.png,how are You,train,synthetic_hardcase
+hard_139.png,HOW ARE YOU,train,synthetic_hardcase
+hard_140.png,HEMANTH,train,synthetic_hardcase
+hard_141.png,Hemanth,train,synthetic_hardcase
+hard_142.png,HEMANTH,train,synthetic_hardcase
+hard_143.png,how are you,train,synthetic_hardcase
+hard_144.png,how are you,train,synthetic_hardcase
+hard_145.png,How are you,train,synthetic_hardcase
+hard_146.png,how are You,train,synthetic_hardcase
+hard_147.png,HOW ARE YOU,train,synthetic_hardcase
+hard_148.png,HEMANTH,train,synthetic_hardcase
+hard_149.png,Hemanth,train,synthetic_hardcase
+hard_150.png,HEMANTH,train,synthetic_hardcase
+hard_151.png,how are you,train,synthetic_hardcase
+hard_152.png,how are you,train,synthetic_hardcase
+hard_153.png,How are you,train,synthetic_hardcase
+hard_154.png,how are You,train,synthetic_hardcase
+hard_155.png,HOW ARE YOU,train,synthetic_hardcase
+hard_156.png,HEMANTH,train,synthetic_hardcase
+hard_157.png,Hemanth,train,synthetic_hardcase
+hard_158.png,HEMANTH,train,synthetic_hardcase
+hard_159.png,how are you,train,synthetic_hardcase
+hard_160.png,how are you,train,synthetic_hardcase
+hard_161.png,How are you,train,synthetic_hardcase
+hard_162.png,how are You,train,synthetic_hardcase
+hard_163.png,HOW ARE YOU,train,synthetic_hardcase
+hard_164.png,HEMANTH,train,synthetic_hardcase
+hard_165.png,Hemanth,train,synthetic_hardcase
+hard_166.png,HEMANTH,train,synthetic_hardcase
+hard_167.png,how are you,train,synthetic_hardcase
+hard_168.png,how are you,train,synthetic_hardcase
+hard_169.png,How are you,train,synthetic_hardcase
+hard_170.png,how are You,train,synthetic_hardcase
+hard_171.png,HOW ARE YOU,train,synthetic_hardcase
+hard_172.png,HEMANTH,train,synthetic_hardcase
+hard_173.png,Hemanth,train,synthetic_hardcase
+hard_174.png,HEMANTH,train,synthetic_hardcase
+hard_175.png,how are you,train,synthetic_hardcase
+hard_176.png,how are you,train,synthetic_hardcase
+hard_177.png,How are you,train,synthetic_hardcase
+hard_178.png,how are You,train,synthetic_hardcase
+hard_179.png,HOW ARE YOU,train,synthetic_hardcase
+hard_180.png,HEMANTH,train,synthetic_hardcase
+hard_181.png,Hemanth,train,synthetic_hardcase
+hard_182.png,HEMANTH,train,synthetic_hardcase
+hard_183.png,how are you,train,synthetic_hardcase

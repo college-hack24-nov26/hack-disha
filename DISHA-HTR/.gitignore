@@ -49,3 +49,40 @@ outputs/
 # Evaluation run outputs (keep folder; ignore generated artifacts)
 evaluation/results/*
 !evaluation/results/.gitkeep
+
+# IAM / training data (do not commit archives or extracted images)
+datasets/iam/raw/*
+!datasets/iam/raw/.gitkeep
+datasets/iam/extracted/*
+!datasets/iam/extracted/.gitkeep
+datasets/iam/processed/*
+!datasets/iam/processed/.gitkeep
+datasets/iam/manifests/*.csv
+datasets/iam/manifests/*.json
+!datasets/iam/manifests/.gitkeep
+datasets/iam/hf_teklia/
+# Large IAM mirrors / archives (keep docs & tiny placeholders only)
+datasets/**/*.zip
+datasets/**/*.tar
+datasets/**/*.tar.gz
+datasets/**/*.tgz
+training/vigorous/
+# Ignore accidental giant dumps under training, keep hardcase/alphabet_pairs trackable
+training/**/raw/
+training/**/*.zip
+
+# Demo private results / inspect scratch
+demo/results/
+demo/_inspect/
+demo/_probe/
+# Fine-tuned demo weights already covered by *.safetensors; keep meta trackable if desired
+
+# Doctor personalization data (samples, adapters, audits) — keep local only
+personalization/doctors/
+personalization/**/adapters/
+personalization/**/samples/
+personalization/**/corrections/
+personalization/**/audit/
+
+# Judge demo local storage (uploads, legacy originals, records)
+judge_demo_data/
