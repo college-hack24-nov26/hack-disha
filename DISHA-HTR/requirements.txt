@@ -1,0 +1,26 @@
+# DISHA HTR — install PyTorch CUDA wheel FIRST, then this file.
+#
+# Verified on this machine (2026-11-03):
+#   Python 3.14.8 (Windows amd64)
+#   NVIDIA GeForce RTX 3050 6GB Laptop GPU
+#   Driver 581.86 (nvidia-smi reports CUDA Version 13.0)
+#   torch 2.11.0+cu128  ->  torch.cuda.is_available() == True
+#
+# Step 1 — PyTorch with CUDA 12.8 (compatible with driver CUDA 13.0):
+#   .venv\Scripts\python.exe -m pip install torch --index-url https://download.pytorch.org/whl/cu128
+#
+# Step 2 — remaining deps:
+#   .venv\Scripts\python.exe -m pip install -r requirements.txt
+#
+# CPU-only fallback (if CUDA wheel unavailable):
+#   .venv\Scripts\python.exe -m pip install torch --index-url https://download.pytorch.org/whl/cpu
+
+torch>=2.11.0
+transformers>=4.40.0
+Pillow>=10.0.0
+opencv-python-headless>=4.8.0
+numpy>=1.26.0
+PyYAML>=6.0
+sentencepiece>=0.2.0
+protobuf>=4.25.0
+tiktoken>=0.7.0

@@ -1,0 +1,137 @@
+image_filename,ground_truth,split
+alpha_000.png,Uu Vv Ww Xx,train
+alpha_001.png,Rr Ss Tt Uu Vv Ww Xx,train
+alpha_002.png,Mm Nn Oo Pp,train
+alpha_003.png,Uu Vv Ww Xx,train
+alpha_004.png,Ss Tt Uu Vv Ww Xx,train
+alpha_005.png,Nn Oo Pp Qq Rr Ss Tt Uu,train
+alpha_006.png,Tt Uu Vv Ww Xx,train
+alpha_007.png,Rr Ss Tt Uu Vv,train
+alpha_008.png,Rr Ss Tt Uu Vv,train
+alpha_009.png,Nn Oo Pp Qq Rr Ss,train
+alpha_010.png,Aa Bb Cc Dd,train
+alpha_011.png,Ss Tt Uu Vv Ww Xx Yy Zz,train
+alpha_012.png,Qq Rr Ss Tt Uu Vv,train
+alpha_013.png,Ll Mm Nn Oo Pp Qq,train
+alpha_014.png,Ii Jj Kk Ll Mm Nn Oo Pp,train
+alpha_015.png,Ee Ff Gg Hh Ii Jj Kk,train
+alpha_016.png,Hh Ii Jj Kk Ll Mm,train
+alpha_017.png,Rr Ss Tt Uu Vv Ww,train
+alpha_018.png,Rr Ss Tt Uu Vv,train
+alpha_019.png,Tt Uu Vv Ww Xx Yy Zz,train
+alpha_020.png,Hh Ii Jj Kk Ll Mm,train
+alpha_021.png,Dd Ee Ff Gg Hh Ii Jj,train
+alpha_022.png,Ii Jj Kk Ll Mm Nn Oo Pp,train
+alpha_023.png,Ss Tt Uu Vv,train
+alpha_024.png,Mm Nn Oo Pp Qq,train
+alpha_025.png,Ii Jj Kk Ll Mm Nn Oo,train
+alpha_026.png,Ll Mm Nn Oo Pp,train
+alpha_027.png,Bb Cc Dd Ee Ff Gg,train
+alpha_028.png,Pp Qq Rr Ss Tt Uu Vv,train
+alpha_029.png,Ii Jj Kk Ll Mm Nn Oo Pp,train
+alpha_030.png,Ll Mm Nn Oo Pp Qq Rr,train
+alpha_031.png,Ee Ff Gg Hh Ii Jj,train
+alpha_032.png,Bb Cc Dd Ee Ff,train
+alpha_033.png,Tt Uu Vv Ww,train
+alpha_034.png,Oo Pp Qq Rr,train
+alpha_035.png,Mm Nn Oo Pp Qq Rr,train
+alpha_036.png,Ff Gg Hh Ii Jj Kk Ll Mm,train
+alpha_037.png,Aa Bb Cc Dd Ee Ff Gg Hh,train
+alpha_038.png,Dd Ee Ff Gg Hh Ii Jj,train
+alpha_039.png,Ii Jj Kk Ll,train
+alpha_040.png,Bb Cc Dd Ee Ff Gg,train
+alpha_041.png,Ii Jj Kk Ll Mm Nn,train
+alpha_042.png,Dd Ee Ff Gg Hh Ii Jj,train
+alpha_043.png,Oo Pp Qq Rr Ss Tt,train
+alpha_044.png,Jj Kk Ll Mm,train
+alpha_045.png,Ee Ff Gg Hh,train
+alpha_046.png,Ii Jj Kk Ll Mm Nn Oo,train
+alpha_047.png,Ll Mm Nn Oo,train
+alpha_048.png,Dd Ee Ff Gg,train
+alpha_049.png,Gg Hh Ii Jj Kk Ll Mm,train
+alpha_050.png,Gg Hh Ii Jj Kk Ll Mm Nn,train
+alpha_051.png,Pp Qq Rr Ss Tt Uu Vv,train
+alpha_052.png,Tt Uu Vv Ww Xx Yy Zz,train
+alpha_053.png,Pp Qq Rr Ss,train
+alpha_054.png,Ll Mm Nn Oo,train
+alpha_055.png,Tt Uu Vv Ww Xx Yy Zz,train
+alpha_056.png,Kk Ll Mm Nn Oo Pp Qq Rr,train
+alpha_057.png,Aa Bb Cc Dd Ee,train
+alpha_058.png,Kk Ll Mm Nn Oo Pp Qq Rr,train
+alpha_059.png,Cc Dd Ee Ff Gg Hh Ii Jj,train
+alpha_060.png,Jj Kk Ll Mm Nn Oo,train
+alpha_061.png,Oo Pp Qq Rr,train
+alpha_062.png,Kk Ll Mm Nn,train
+alpha_063.png,Cc Dd Ee Ff Gg Hh,train
+alpha_064.png,Dd Ee Ff Gg Hh Ii Jj Kk,train
+alpha_065.png,Pp Qq Rr Ss Tt,train
+alpha_066.png,Dd Ee Ff Gg Hh Ii,train
+alpha_067.png,Uu Vv Ww Xx Yy Zz,train
+alpha_068.png,Uu Vv Ww Xx Yy Zz,train
+alpha_069.png,Qq Rr Ss Tt Uu Vv Ww Xx,train
+alpha_070.png,Ee Ff Gg Hh,train
+alpha_071.png,Bb Cc Dd Ee Ff Gg,train
+alpha_072.png,Jj Kk Ll Mm Nn Oo,train
+alpha_073.png,Ll Mm Nn Oo Pp Qq,train
+alpha_074.png,Ii Jj Kk Ll Mm Nn,train
+alpha_075.png,Uu Vv Ww Xx Yy,train
+alpha_076.png,Ss Tt Uu Vv,train
+alpha_077.png,Jj Kk Ll Mm Nn,train
+alpha_078.png,Tt Uu Vv Ww Xx Yy,train
+alpha_079.png,Oo Pp Qq Rr Ss Tt Uu,train
+alpha_080.png,Tt Uu Vv Ww Xx Yy Zz,train
+alpha_081.png,Pp Qq Rr Ss Tt Uu,train
+alpha_082.png,Tt Uu Vv Ww,train
+alpha_083.png,Ee Ff Gg Hh Ii Jj Kk Ll,train
+alpha_084.png,Ss Tt Uu Vv Ww Xx Yy Zz,train
+alpha_085.png,Rr Ss Tt Uu Vv Ww,train
+alpha_086.png,Pp Qq Rr Ss Tt Uu,train
+alpha_087.png,Ii Jj Kk Ll Mm Nn Oo Pp,train
+alpha_088.png,Cc Dd Ee Ff Gg Hh Ii Jj,train
+alpha_089.png,Dd Ee Ff Gg Hh Ii,train
+alpha_090.png,Aa Bb Cc Dd Ee Ff,train
+alpha_091.png,Jj Kk Ll Mm Nn Oo,train
+alpha_092.png,Qq Rr Ss Tt Uu,train
+alpha_093.png,Jj Kk Ll Mm,train
+alpha_094.png,Uu Vv Ww Xx Yy Zz,train
+alpha_095.png,Oo Pp Qq Rr Ss Tt Uu Vv,train
+alpha_096.png,Bb Cc Dd Ee Ff,train
+alpha_097.png,Qq Rr Ss Tt Uu Vv,train
+alpha_098.png,Oo Pp Qq Rr Ss Tt,train
+alpha_099.png,Hh Ii Jj Kk Ll Mm Nn Oo,train
+alpha_100.png,Ss Tt Uu Vv Ww Xx Yy Zz,train
+alpha_101.png,Cc Dd Ee Ff,train
+alpha_102.png,Ii Jj Kk Ll Mm Nn Oo Pp,train
+alpha_103.png,Bb Cc Dd Ee,train
+alpha_104.png,Ss Tt Uu Vv Ww Xx Yy,train
+alpha_105.png,Cc Dd Ee Ff Gg Hh Ii Jj,train
+alpha_106.png,Hh Ii Jj Kk,train
+alpha_107.png,Qq Rr Ss Tt Uu Vv Ww,train
+alpha_108.png,Ii Jj Kk Ll Mm Nn Oo,train
+alpha_109.png,Uu Vv Ww Xx Yy Zz,train
+alpha_110.png,Oo Pp Qq Rr Ss,train
+alpha_111.png,Nn Oo Pp Qq Rr Ss Tt Uu,train
+alpha_112.png,Hh Ii Jj Kk Ll Mm Nn,train
+alpha_113.png,Oo Pp Qq Rr Ss Tt,train
+alpha_114.png,Mm Nn Oo Pp,train
+alpha_115.png,Pp Qq Rr Ss Tt Uu Vv Ww,train
+alpha_116.png,Ff Gg Hh Ii Jj Kk Ll,train
+alpha_117.png,Oo Pp Qq Rr Ss Tt Uu,train
+alpha_118.png,Dd Ee Ff Gg Hh,train
+alpha_119.png,Rr Ss Tt Uu Vv Ww,train
+alpha_val_00.png,Mm Nn Oo Pp Qq Rr Ss,val
+alpha_val_01.png,Cc Dd Ee Ff Gg Hh Ii,val
+alpha_val_02.png,Kk Ll Mm Nn Oo Pp Qq Rr,val
+alpha_val_03.png,Rr Ss Tt Uu Vv Ww Xx,val
+alpha_val_04.png,Kk Ll Mm Nn Oo Pp Qq Rr,val
+alpha_val_05.png,Bb Cc Dd Ee,val
+alpha_val_06.png,Ff Gg Hh Ii Jj Kk Ll,val
+alpha_val_07.png,Ee Ff Gg Hh Ii Jj,val
+alpha_val_08.png,Uu Vv Ww Xx Yy,val
+alpha_val_09.png,Dd Ee Ff Gg,val
+alpha_val_10.png,Oo Pp Qq Rr,val
+alpha_val_11.png,Cc Dd Ee Ff Gg,val
+alpha_120.png,Aa Bb Cc Dd Ee Ff,train
+alpha_121.png,Gg Hh Ii Jj Kk Ll,train
+alpha_122.png,Aa Bb Cc Dd Ee Ff,val
+alpha_123.png,Gg Hh Ii Jj Kk Ll,val

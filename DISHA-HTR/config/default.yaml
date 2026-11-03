@@ -1,0 +1,26 @@
+# DISHA HTR default configuration
+# Preserve this file across runs; override via env or CLI later.
+
+model:
+  name: microsoft/trocr-small-handwritten
+  # Local override directory (optional). If present and non-empty, load from here.
+  local_dir: checkpoints/trocr-small-handwritten
+  # Cache dir for HF downloads (ephemeral on some hosts; set explicitly for reuse)
+  cache_dir: .cache/huggingface
+
+hardware:
+  # auto | cuda | cpu
+  device_preference: auto
+  # Fail loudly if CUDA requested but unavailable
+  require_cuda: false
+  # null = auto (FP16 on CUDA when capability >= 7.0)
+  use_fp16: null
+
+recognition:
+  max_new_tokens: 64
+  num_beams: 4
+
+logging:
+  level: INFO
+  log_dir: logs
+  log_file: disha_htr.log

@@ -1,0 +1,15 @@
+image_filename,source_page,ground_truth,split
+train_nc02_stack.png,non_cursive/NC02.jpeg,Stack web development.,train
+train_nc01_hi.png,non_cursive/NC01.jpeg,H I,train
+train_nc01_name1.png,non_cursive/NC01.jpeg,my Name is hemanth Kumar,train
+train_nc01_what.png,non_cursive/NC01.jpeg,what is your name,train
+train_nc01_can.png,non_cursive/NC01.jpeg,Can I know,train
+train_cu01_hello.png,cursive/CU01.jpeg,Hello we are pleased to,train
+train_cu01_meet.png,cursive/CU01.jpeg,meet you.,train
+train_cu01_topic.png,cursive/CU01.jpeg,Our innovation topic was,train
+train_cu01_phase.png,cursive/CU01.jpeg,development phase of,train
+train_cu01_hack.png,cursive/CU01.jpeg,our hackathon.,train
+train_cu01_today.png,cursive/CU01.jpeg,today attended the,train
+train_cu01_progress.png,cursive/CU01.jpeg,The overall progress of,train
+train_cu01_project.png,cursive/CU01.jpeg,the project is going,train
+train_cu01_well.png,cursive/CU01.jpeg,well.,train
