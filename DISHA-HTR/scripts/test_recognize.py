@@ -1,4 +1,4 @@
-"""Basic single-line handwriting recognition smoke test."""
+"""Basic single-line handwriting recognition smoke test with metrics."""
 
 from __future__ import annotations
 
@@ -11,18 +11,16 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "src"))
 
-from disha_htr.hardware import detect_hardware  # noqa: E402
+from disha_htr.inference import SAMPLE_INSTRUCTIONS, run_baseline_inference  # noqa: E402
 from disha_htr.logging_config import setup_logging  # noqa: E402
-from disha_htr.model_loader import load_trocr  # noqa: E402
-from disha_htr.recognize import recognize_image  # noqa: E402
 
 
 def main() -> int:
     parser = argparse.ArgumentParser(description="DISHA HTR single-line recognition test")
     parser.add_argument(
         "--image",
-        default=str(ROOT / "samples" / "synthetic_line.png"),
-        help="Path to input image",
+        default=None,
+        help="Path to input image (default: auto-discover under samples/)",
     )
     parser.add_argument(
         "--model",
@@ -40,46 +38,54 @@ def main() -> int:
         default=str(ROOT / "checkpoints" / "trocr-small-handwritten"),
         help="Local checkpoint directory",
     )
+    parser.add_argument(
+        "--fp16",
+        dest="fp16",
+        action="store_true",
+        default=None,
+        help="Force FP16 (CUDA only)",
+    )
+    parser.add_argument(
+        "--no-fp16",
+        dest="fp16",
+        action="store_false",
+        help="Disable FP16 even on CUDA",
+    )
     args = parser.parse_args()
 
-    # Run relative to project root so config paths resolve
     import os
 
     os.chdir(ROOT)
 
     logger = setup_logging(level="INFO", log_dir=ROOT / "logs")
-    logger.info("=== DISHA HTR smoke test ===")
+    logger.info("=== DISHA HTR baseline inference ===")
 
-    hw = detect_hardware(preference=args.device, require_cuda=False)
-    print("\n=== Hardware (verified) ===")
-    print(json.dumps(hw.to_dict(), indent=2))
-
-    image_path = Path(args.image)
-    if not image_path.is_file():
-        logger.error("Sample image missing: %s — run scripts/make_sample_image.py first", image_path)
-        print(f"ERROR: sample image not found: {image_path}", file=sys.stderr)
+    try:
+        payload = run_baseline_inference(
+            image_path=args.image,
+            model_name=args.model,
+            local_dir=args.local_dir,
+            cache_dir=ROOT / ".cache" / "huggingface",
+            device_preference=args.device,
+            use_fp16=args.fp16,
+        )
+    except FileNotFoundError as exc:
+        logger.error("%s", exc)
+        print(str(exc), file=sys.stderr)
+        if "No usable sample" in str(exc) or "Place a clear" in str(exc):
+            print(SAMPLE_INSTRUCTIONS, file=sys.stderr)
         return 2
 
-    loaded = load_trocr(
-        model_name=args.model,
-        local_dir=args.local_dir,
-        cache_dir=ROOT / ".cache" / "huggingface",
-        device=hw.selected_device,
-    )
-
-    result = recognize_image(image_path, loaded)
+    print("\n=== Hardware (verified) ===")
+    print(json.dumps(payload["hardware"], indent=2))
     print("\n=== Recognition result (actual) ===")
+    print(json.dumps(payload["recognition"], indent=2))
+    print("\n=== Sample ===")
     print(json.dumps(
-        {
-            "image": result.image_path,
-            "text": result.text,
-            "device": result.device,
-            "model_name": result.model_name,
-            "model_source": result.model_source,
-        },
+        {"sample_image": payload["sample_image"], "sample_note": payload["sample_note"]},
         indent=2,
     ))
-    logger.info("Smoke test completed successfully")
+    logger.info("Baseline inference completed successfully")
     return 0
 
 

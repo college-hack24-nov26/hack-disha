@@ -13,6 +13,8 @@ hardware:
   device_preference: auto
   # Fail loudly if CUDA requested but unavailable
   require_cuda: false
+  # null = auto (FP16 on CUDA when capability >= 7.0)
+  use_fp16: null
 
 recognition:
   max_new_tokens: 64
