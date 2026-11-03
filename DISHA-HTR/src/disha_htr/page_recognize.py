@@ -45,6 +45,94 @@ def _looks_like_collapse(text: str) -> bool:
     return False
 
 
+_COMMON_ENGLISH = frozenset(
+    {
+        "the",
+        "a",
+        "an",
+        "is",
+        "are",
+        "was",
+        "were",
+        "of",
+        "to",
+        "and",
+        "in",
+        "on",
+        "for",
+        "with",
+        "this",
+        "that",
+        "idea",
+        "week",
+        "polish",
+        "vocabulary",
+        "medical",
+        "handwriting",
+        "rejection",
+        "newly",
+        "blood",
+        "infection",
+        "feet",
+        "well",
+    }
+)
+
+
+def _looks_like_letter_pairs(text: str) -> bool:
+    """True for alphabet-drill style tokens like 'Aa Bb Cc' / 'Gg Hh Ii'."""
+    words = [w for w in (text or "").replace(",", " ").split() if w]
+    if len(words) < 3:
+        return False
+    pairish = 0
+    for w in words:
+        if w.lower() in _COMMON_ENGLISH:
+            continue
+        if 1 <= len(w) <= 2 and w.isalpha():
+            pairish += 1
+    return pairish >= max(3, int(0.6 * len(words)))
+
+
+def _looks_like_fluent_hallucination(text: str) -> bool:
+    """Heuristic: fluent English words that are unlikely for a handwriting crop."""
+    t = (text or "").strip()
+    if not t:
+        return False
+    if _looks_like_letter_pairs(t):
+        return False
+    words = [w for w in t.replace(",", " ").replace(".", " ").replace("'", " ").split() if w]
+    if not words:
+        return False
+    lower = [w.lower() for w in words]
+    # Alphabet drills: many non-English 1–2 letter tokens (Aa, Bb…) — keep those.
+    letterish_short = sum(
+        1 for w in words if 1 <= len(w) <= 2 and w.isalpha() and w.lower() not in _COMMON_ENGLISH
+    )
+    if letterish_short >= max(3, len(words) // 2):
+        return False
+    common_hits = sum(1 for w in lower if w in _COMMON_ENGLISH)
+    alpha = sum(ch.isalpha() or ch.isspace() for ch in t) / max(len(t), 1)
+    # Classic TrOCR collapse: full English sentence on letter/line crops.
+    if len(t) >= 18 and len(words) >= 4 and alpha > 0.85:
+        return True
+    # Short but clearly English phrases ("The week is", "medical vocabulary").
+    if len(words) >= 2 and common_hits >= 2 and alpha > 0.8:
+        return True
+    if len(words) >= 3 and common_hits >= 2 and alpha > 0.85:
+        return True
+    return False
+
+
+def _sanitize_line_text(text: str) -> tuple[str, str, str]:
+    """Return (display_text, combine_text, error_code)."""
+    raw = text or ""
+    if _looks_like_collapse(raw):
+        return raw, "", "collapse_pattern"
+    if _looks_like_fluent_hallucination(raw):
+        return raw, "", "fluent_hallucination"
+    return raw, raw, ""
+
+
 @dataclass
 class LinePrediction:
     line_index: int
@@ -101,20 +189,23 @@ def recognize_page_or_line(
         raise ValueError(f"Could not decode image: {path}")
 
     h, w = bgr.shape[:2]
-    aspect = h / max(w, 1)
 
-    if force_single_line or aspect < 1.15:
+    # Only skip page split when the caller explicitly asks for single-line mode.
+    # Wide phone photos of notebooks are often landscape (aspect < 1) but still
+    # contain multiple handwriting lines — do NOT force single-line from aspect.
+    if force_single_line:
         t0 = time.perf_counter()
         result = recognize_image(path, loaded)
         elapsed = time.perf_counter() - t0
-        text = result.text or ""
-        status = "ok"
-        note = "Treated as a single-line/crop image (no page split)."
-        combined = text
-        if _looks_like_collapse(text):
-            status = "low_confidence"
-            note += " Model returned low-confidence/collapse text; draft left empty for review."
-            combined = ""
+        text, combined, err = _sanitize_line_text(result.text or "")
+        status = "ok" if not err else "low_confidence"
+        note = "Single-line mode: recognized the whole image as one crop (no page split)."
+        if err:
+            note += (
+                " Model returned unlikely/hallucinated text for this crop; "
+                "draft cleared for clinician review. Try page mode (uncheck single-line) "
+                "or a tighter line crop."
+            )
         line = LinePrediction(
             line_index=1,
             x0=0,
@@ -124,7 +215,7 @@ def recognize_page_or_line(
             text=text,
             inference_time_s=round(result.inference_time_s, 4),
             status=status,
-            error="collapse_pattern" if status == "low_confidence" else "",
+            error=err,
         )
         return PageRecognitionResult(
             mode="single_line",
@@ -136,29 +227,43 @@ def recognize_page_or_line(
         )
 
     boxes = detect_line_boxes(bgr)
+    # Keep only reasonably tall bands (filters ruled-paper crumbs on phone photos).
+    # Wide short strips already use a high min height inside detect_line_boxes;
+    # keep this floor mild so real 2-line crops are not wiped out.
+    aspect = h / max(w, 1)
+    min_box_h = max(14, int((0.12 if aspect < 0.35 else 0.035) * h))
+    boxes = [b for b in boxes if (b[3] - b[1]) >= min_box_h]
     if not boxes:
         t0 = time.perf_counter()
         result = recognize_image(path, loaded)
         elapsed = time.perf_counter() - t0
+        text, combined, err = _sanitize_line_text(result.text or "")
+        status = "ok" if not err else "low_confidence"
+        note = (
+            "Full-page line segmentation found no reliable lines; "
+            "fell back to whole-image recognition (may be unreliable)."
+        )
+        if err:
+            note += (
+                " Fallback text looked hallucinated and was cleared from the draft."
+            )
         line = LinePrediction(
             line_index=1,
             x0=0,
             y0=0,
             x1=w,
             y1=h,
-            text=result.text,
+            text=text,
             inference_time_s=round(result.inference_time_s, 4),
-            status="ok",
+            status=status,
+            error=err,
         )
         return PageRecognitionResult(
             mode="page_fallback_single",
-            combined_text=result.text,
+            combined_text=combined,
             lines=[line],
             total_inference_time_s=round(elapsed, 4),
-            segmentation_note=(
-                "Full-page line segmentation found no reliable lines; "
-                "fell back to whole-image recognition (may be unreliable)."
-            ),
+            segmentation_note=note,
             n_lines_detected=0,
         )
 
@@ -186,7 +291,8 @@ def recognize_page_or_line(
                 )
                 continue
             ink = _ink_ratio(crop)
-            if ink < 0.035:
+            # Letter practice / light pencil can be sparse — keep threshold low.
+            if ink < 0.012:
                 preds.append(
                     LinePrediction(
                         line_index=idx,
@@ -225,16 +331,8 @@ def recognize_page_or_line(
             try:
                 result = recognize_image(crop_file, loaded)
                 total += result.inference_time_s
-                text = result.text or ""
-                status = "ok"
-                err = ""
-                if _looks_like_collapse(text):
-                    status = "low_confidence"
-                    err = "collapse_pattern"
-                    # Keep text visible for debugging, but do not promote into combined draft.
-                    text_for_combine = ""
-                else:
-                    text_for_combine = text
+                text, text_for_combine, err = _sanitize_line_text(result.text or "")
+                status = "ok" if not err else "low_confidence"
                 preds.append(
                     LinePrediction(
                         line_index=idx,
@@ -269,15 +367,26 @@ def recognize_page_or_line(
     n_ok = sum(1 for p in preds if p.status == "ok")
     n_low = sum(1 for p in preds if p.status == "low_confidence")
     n_skip = sum(1 for p in preds if p.status.startswith("skipped"))
+    combined = "\n".join(texts)
+    note = (
+        f"Segmented into {len(boxes)} line crop(s); kept {n_ok} readable, "
+        f"{n_low} low-confidence, {n_skip} skipped (low ink). "
+        "Draft only — clinician review required."
+    )
+    # If most lines look hallucinated, do not promote a single stray "ok" line.
+    if n_ok == 0 or (n_low > 0 and n_low >= n_ok):
+        combined = ""
+        note += (
+            " Most line reads looked unreliable (model hallucination). "
+            "Alphabet drills / letter grids are especially hard for the current English "
+            "word model — try a clear written sentence crop, or open Technical details "
+            "for per-line attempts."
+        )
     return PageRecognitionResult(
         mode="page_lines",
-        combined_text="\n".join(texts),
+        combined_text=combined,
         lines=preds,
         total_inference_time_s=round(total, 4),
-        segmentation_note=(
-            f"Segmented into {len(boxes)} line crop(s); kept {n_ok} readable, "
-            f"{n_low} low-confidence, {n_skip} skipped (low ink). "
-            "Draft only — doctor review required. Notebook pages remain hard for the base model."
-        ),
+        segmentation_note=note,
         n_lines_detected=len(boxes),
     )

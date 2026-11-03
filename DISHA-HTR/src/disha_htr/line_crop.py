@@ -230,6 +230,26 @@ def _nms_y_overlap(
     return sorted(kept, key=lambda b: b[1])
 
 
+def _clip_adjacent_boxes(
+    boxes: list[tuple[int, int, int, int]],
+) -> list[tuple[int, int, int, int]]:
+    """Prevent padded line boxes from eating into neighboring bands."""
+    if len(boxes) <= 1:
+        return boxes
+    ordered = sorted(boxes, key=lambda b: b[1])
+    ys = [[b[0], b[1], b[2], b[3]] for b in ordered]
+    for i in range(len(ys) - 1):
+        _x0, y0, _x1, y1 = ys[i]
+        _nx0, ny0, _nx1, ny1 = ys[i + 1]
+        if y1 <= ny0:
+            continue
+        mid = (y0 + ny1) // 2
+        # Keep each band on its side of the midpoint.
+        ys[i][3] = max(y0 + 1, min(y1, mid))
+        ys[i + 1][1] = min(ny1 - 1, max(ny0, mid))
+    return [(int(a), int(b), int(c), int(d)) for a, b, c, d in ys if d - b >= 2]
+
+
 def detect_line_boxes(
     image_bgr: np.ndarray,
     *,
@@ -242,9 +262,10 @@ def detect_line_boxes(
     """
     Detect approximate text-line bounding boxes.
 
-    Uses CLAHE + adaptive threshold, suppresses long ruled notebook lines,
-    then RLSA-style horizontal dilation + projection. Falls back to the
-    simpler projection path if the enhanced detector finds nothing.
+    Uses CLAHE + adaptive threshold intersected with dark-ink mask, suppresses
+    long ruled notebook lines, then RLSA-style horizontal dilation + projection.
+    Wide short strips (phone crops of a few notebook lines) use taller min/max
+    band heights so ruled-paper crumbs do not become fake lines.
 
     Returns list of (x0, y0, x1, y1) in image coordinates, top-to-bottom.
     """
@@ -264,32 +285,62 @@ def detect_line_boxes(
         35,
         12,
     )
+    # Dark absolute ink helps on phone photos where adaptive threshold lights up
+    # paper texture / shadows and washes out true line gaps.
+    dark = ((gray < 110).astype(np.uint8) * 255)
+    ink_core = cv2.bitwise_and(binary, dark)
+    if float(ink_core.mean()) < 2.0:
+        ink_core = dark
     # Suppress long horizontal ruled lines common on notebook Rx pages.
     hk = cv2.getStructuringElement(cv2.MORPH_RECT, (max(40, w // 6), 1))
     ruled = cv2.morphologyEx(binary, cv2.MORPH_OPEN, hk)
-    ink = cv2.subtract(binary, ruled)
+    ink = cv2.subtract(ink_core, cv2.bitwise_and(ink_core, ruled))
     ink = cv2.morphologyEx(
         ink, cv2.MORPH_CLOSE, cv2.getStructuringElement(cv2.MORPH_RECT, (3, 3))
     )
     # Connect characters within a line (Run-Length Smoothing style).
     rlsa = cv2.dilate(
-        ink, cv2.getStructuringElement(cv2.MORPH_RECT, (max(12, w // 40), 1))
+        ink,
+        cv2.getStructuringElement(
+            cv2.MORPH_RECT, (max(12, w // 40), max(1, h // 90))
+        ),
     )
 
-    win = max(3, h // 100)
+    win = max(3, h // 80)
     kernel = np.ones(win, dtype=np.float64) / float(win)
     projection = np.convolve(rlsa.sum(axis=1).astype(np.float64) / 255.0, kernel, mode="same")
 
-    # Notebook pages need a taller minimum so ruled-line crumbs are ignored.
-    min_h = max(16, int(h * max(min_line_height_ratio, 0.022)))
-    max_h = max(min_h + 1, int(h * max_line_height_ratio))
-    merge_gap = max(2, int(h * merge_gap_ratio))
+    aspect = h / max(w, 1)
+    # Wide strips (e.g. 960×155 alphabet crop): expect a few tall bands, not
+    # dozens of ruled-line crumbs.
+    if aspect < 0.35:
+        min_h = max(22, int(h * max(min_line_height_ratio, 0.16)))
+        max_h = max(min_h + 1, int(h * max(max_line_height_ratio, 0.55)))
+        merge_gap = max(6, int(h * max(merge_gap_ratio, 0.06)))
+        thresh_frac = 0.22
+        density = 0.008
+        pad = max(pad_y_ratio, 0.1)
+    elif aspect < 0.85:
+        min_h = max(18, int(h * max(min_line_height_ratio, 0.03)))
+        max_h = max(min_h + 1, int(h * max(max_line_height_ratio, 0.22)))
+        merge_gap = max(3, int(h * max(merge_gap_ratio, 0.01)))
+        thresh_frac = 0.15
+        density = 0.01
+        pad = pad_y_ratio
+    else:
+        # Tall notebook pages need a taller minimum so ruled crumbs are ignored.
+        min_h = max(16, int(h * max(min_line_height_ratio, 0.022)))
+        max_h = max(min_h + 1, int(h * max_line_height_ratio))
+        merge_gap = max(2, int(h * merge_gap_ratio))
+        thresh_frac = 0.12
+        density = 0.012
+        pad = pad_y_ratio
 
     spans = _spans_from_projection(
         projection,
         width=w,
         min_ink_ratio=min_ink_ratio,
-        thresh_frac=0.12,
+        thresh_frac=thresh_frac,
         min_h=min_h,
         max_h=max_h,
         merge_gap=merge_gap,
@@ -299,12 +350,18 @@ def detect_line_boxes(
         spans,
         width=w,
         height=h,
-        pad_y_ratio=pad_y_ratio,
-        min_density=0.012,
+        pad_y_ratio=pad,
+        min_density=density,
     )
     boxes = _nms_y_overlap(boxes, iou_thresh=0.35)
-    # Drop remaining ultra-short bands (often ruled paper ghosts).
     boxes = [b for b in boxes if (b[3] - b[1]) >= min_h]
+    boxes = _clip_adjacent_boxes(boxes)
+    # Drop remaining crumb bands relative to the median real line height.
+    if len(boxes) >= 3:
+        heights = sorted(b[3] - b[1] for b in boxes)
+        med = heights[len(heights) // 2]
+        boxes = [b for b in boxes if (b[3] - b[1]) >= max(min_h, int(0.55 * med))]
+        boxes = _clip_adjacent_boxes(boxes)
 
     if boxes:
         return boxes
@@ -329,7 +386,7 @@ def detect_line_boxes(
         max_h=max(min_h + 1, int(h * 0.25)),
         merge_gap=max(1, int(h * merge_gap_ratio)),
     )
-    return _boxes_from_spans(
+    fallback = _boxes_from_spans(
         simple,
         spans2,
         width=w,
@@ -337,6 +394,7 @@ def detect_line_boxes(
         pad_y_ratio=pad_y_ratio,
         min_density=0.004,
     )
+    return _clip_adjacent_boxes(fallback)
 
 
 def crop_page_lines(
