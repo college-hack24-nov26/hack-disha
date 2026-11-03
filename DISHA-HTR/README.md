@@ -117,6 +117,10 @@ If `samples/` has no image, the runner exits with instructions (it does **not** 
 
 See the latest run output from `scripts/test_recognize.py`. Synthetic image text is demo glyphs only — TrOCR-handwritten on printed/segoe text is expected to be unreliable. **No accuracy claim.**
 
+## Category evaluation (CER / WER)
+
+See `evaluation/README.md`. Uses the same `load_trocr` + `recognize_image` APIs (model loaded once). Fill `evaluation/ground_truth/transcriptions.csv` before treating metrics as meaningful.
+
 ## Notes
 
 - No real patient information — samples are synthetic unless you add your own.
