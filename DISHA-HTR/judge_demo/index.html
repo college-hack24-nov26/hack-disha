@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>DISHA Handwriting Recognition — Testing</title>
+  <link rel="stylesheet" href="/static/styles.css" />
+</head>
+<body>
+  <div class="app">
+    <header class="hero">
+      <p class="eyebrow">DISHA · clinician tooling</p>
+      <h1>Testing &amp; improving handwriting recognition</h1>
+      <p class="hero-sub">
+        Use this workspace to test clinician handwriting capture, review draft transcriptions, and improve quality.
+        Separate from the patient-facing DISHA app — results are drafts for review only.
+      </p>
+    </header>
+
+    <div class="banner" id="healthBanner">Checking service…</div>
+
+    <nav class="tabs" role="tablist">
+      <button class="tab active" data-tab="overview">Overview</button>
+      <button class="tab" data-tab="recognize">Handwriting recognition</button>
+      <button class="tab" data-tab="digital">Prescription pad</button>
+      <button class="tab" data-tab="legacy">Paper archive</button>
+      <button class="tab" data-tab="records">Saved records</button>
+    </nav>
+
+    <section class="panel active" id="panel-overview">
+      <h2>What this testing build covers</h2>
+      <p class="lead">
+        Exercise recognition, digital writing, and paper archival. Treat AI text as a draft to review and improve —
+        held-out accuracy is still low on new handwriting.
+      </p>
+      <div class="metric-row">
+        <div>
+          <strong id="metricBase">14.01%</strong>
+          <span>Current held-out character accuracy (base model)</span>
+        </div>
+        <div>
+          <strong>Improve</strong>
+          <span>Goal: clearer drafts on new clinician handwriting</span>
+        </div>
+      </div>
+      <ul class="simple-list">
+        <li><strong>Handwriting recognition</strong> — upload a PNG/JPG; get a draft transcription.</li>
+        <li><strong>Prescription pad</strong> — write with mouse or finger; keep original strokes.</li>
+        <li><strong>Paper archive</strong> — store a paper prescription image unchanged.</li>
+      </ul>
+      <p class="muted small" id="checkpointInfo">Loading model info…</p>
+    </section>
+
+    <section class="panel" id="panel-recognize">
+      <h2>Handwriting recognition</h2>
+      <p class="lead">
+        Upload a handwriting image to test recognition. Prefer a clear single-line crop.
+        If the service was started with model preload, results usually return in a few seconds.
+      </p>
+      <div class="grid-2">
+        <div>
+          <label class="field">Image (PNG / JPG)
+            <input type="file" id="recFile" accept=".png,.jpg,.jpeg,image/png,image/jpeg" />
+          </label>
+          <label class="field check">
+            <input type="checkbox" id="recForceSingle" checked />
+            <span>Single-line mode (faster · recommended for cropped lines)</span>
+          </label>
+          <div class="btn-row">
+            <button class="btn btn-primary" id="btnRecognize" type="button">Recognize</button>
+          </div>
+          <div class="progress hidden" id="recProgress" aria-live="polite">
+            <div class="progress-bar"></div>
+            <p id="recProgressText">Working…</p>
+          </div>
+          <div class="preview-box" id="recPreview"><p class="muted">Preview appears here.</p></div>
+        </div>
+        <div>
+          <div class="result-box">
+            <p>
+              <strong>Transcription draft</strong>
+              <span class="muted" id="recTime"></span>
+              <span class="draft-badge">Needs clinician review</span>
+            </p>
+            <textarea id="recText" readonly placeholder="Result appears here…"></textarea>
+            <p class="muted" id="recNote"></p>
+            <details class="meta-details">
+              <summary>Technical details</summary>
+              <pre class="mono" id="recMeta"></pre>
+            </details>
+          </div>
+        </div>
+      </div>
+      <p class="status-line" id="recStatus"></p>
+    </section>
+
+    <section class="panel" id="panel-digital">
+      <h2>Digital prescription pad</h2>
+      <p class="lead">
+        Write with mouse, touchpad, or finger. Original strokes are preserved (not converted to a font).
+        <a href="/pad/" target="_blank" rel="noopener">Open full pad</a>
+      </p>
+      <iframe class="pad-frame" title="Digital prescription pad" src="/pad/"></iframe>
+    </section>
+
+    <section class="panel" id="panel-legacy">
+      <h2>Paper prescription archive</h2>
+      <p class="lead">
+        Upload an existing paper prescription. The original image is stored unchanged. Recognition is optional and separate.
+      </p>
+      <div class="grid-2">
+        <div>
+          <label class="field">Paper image
+            <input type="file" id="legFile" accept=".png,.jpg,.jpeg,image/png,image/jpeg" />
+          </label>
+          <label class="field">Clinician reference ID
+            <input type="text" id="legDoctor" value="clinician_test" />
+          </label>
+          <label class="field">Patient reference ID (synthetic test data)
+            <input type="text" id="legPatient" value="TEST-P-001" />
+          </label>
+          <label class="field">Note (optional)
+            <input type="text" id="legNote" placeholder="e.g. scanned test sheet" />
+          </label>
+          <div class="btn-row">
+            <button class="btn btn-primary" id="btnLegacySave" type="button">Save original</button>
+          </div>
+          <div class="preview-box" id="legPreview"><p class="muted">Preview appears here.</p></div>
+        </div>
+        <div class="result-box">
+          <pre class="mono" id="legResult">No archive save yet.</pre>
+        </div>
+      </div>
+    </section>
+
+    <section class="panel" id="panel-records">
+      <h2>Saved records</h2>
+      <p class="lead">
+        Local testing storage on this machine under <code>judge_demo_data/</code> —
+        not the production DISHA database.
+      </p>
+      <div class="btn-row">
+        <button class="btn" id="btnRefreshRecords" type="button">Refresh</button>
+      </div>
+      <div class="record-list" id="recordList"></div>
+      <div id="recordPreview" class="record-preview hidden" aria-live="polite"></div>
+    </section>
+  </div>
+  <script src="/static/app.js"></script>
+</body>
+</html>
