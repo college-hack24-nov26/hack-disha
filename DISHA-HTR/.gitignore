@@ -1,0 +1,47 @@
+# Virtual environment
+.venv/
+venv/
+env/
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+.eggs/
+dist/
+build/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Logs and local runtime
+logs/
+*.log
+
+# Hugging Face / torch caches (keep local; do not commit)
+.cache/
+hf_cache/
+torch_cache/
+
+# IDE / OS
+.idea/
+.vscode/
+*.swp
+.DS_Store
+Thumbs.db
+
+# Keep checkpoint/config directories, ignore large weight files
+checkpoints/*
+!checkpoints/.gitkeep
+!checkpoints/README.md
+*.bin
+*.safetensors
+*.pt
+*.pth
+*.onnx
+*.ckpt
+
+# Sample outputs
+outputs/
+*.png.tmp
