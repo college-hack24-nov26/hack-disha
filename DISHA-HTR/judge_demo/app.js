@@ -40,26 +40,57 @@
   let lastFilename = "";
   let lastCheckpoint = "";
 
+  function renderArchiveSummary(record) {
+    const view = $("legResultView");
+    const raw = $("legResult");
+    if (!view || !raw) return;
+    if (!record) {
+      view.className = "archive-empty";
+      view.innerHTML =
+        `<p class="empty-title">No archive save yet</p>` +
+        `<p class="muted">After you save, clinician, patient, and file details show here in a clear summary.</p>`;
+      raw.classList.add("hidden");
+      raw.textContent = "";
+      return;
+    }
+    view.className = "archive-summary";
+    view.innerHTML =
+      `<div class="summary-row"><dt>Status</dt><dd>Original saved</dd></div>` +
+      `<div class="summary-row"><dt>Record ID</dt><dd>${escapeHtml(record.id || "")}</dd></div>` +
+      `<div class="summary-row"><dt>Clinician</dt><dd>${escapeHtml(
+        [record.doctorName, record.doctorId].filter(Boolean).join(" · ")
+      )}</dd></div>` +
+      `<div class="summary-row"><dt>Patient</dt><dd>${escapeHtml(
+        [record.patientName, record.patientId].filter(Boolean).join(" · ")
+      )}</dd></div>` +
+      `<div class="summary-row"><dt>File</dt><dd>${escapeHtml(record.originalFilename || "")}</dd></div>` +
+      `<div class="summary-row"><dt>Note</dt><dd>${escapeHtml(record.note || "—")}</dd></div>` +
+      `<div class="summary-row"><dt>Storage</dt><dd>${escapeHtml(record.storageNote || "Local workspace only")}</dd></div>`;
+    raw.classList.remove("hidden");
+    raw.textContent = JSON.stringify(record, null, 2);
+  }
+
   async function boot() {
     try {
       const health = await getJSON("/api/health");
-      const modelReady = health.model_loaded ? "model ready" : "model loads on first recognize";
+      const modelReady = health.model_loaded ? "Model ready" : "Model loads on first recognize";
       const acc =
         health.heldout_char_accuracy_pct != null
           ? health.heldout_char_accuracy_pct
           : health.heldout_char_accuracy_pct_base;
       $("healthBanner").innerHTML =
         `<span class="ok">Service online</span> · ` +
-        `testing workspace · ${modelReady} · held-out accuracy ` +
+        `live workspace · ${modelReady} · held-out accuracy ` +
         `<strong>${acc}%</strong>`;
+      if ($("livePillText")) {
+        $("livePillText").textContent = `Live · ${acc}% held-out`;
+      }
       const ck = await getJSON("/api/checkpoint");
       $("checkpointInfo").textContent =
         "Active model: " +
         (ck.selected || "") +
         " · " +
-        (ck.reason || "") +
-        " · comparisons: " +
-        JSON.stringify(ck.comparisons || {});
+        (ck.reason || "");
       $("metricActive").textContent =
         (ck.active_heldout_char_accuracy_pct != null
           ? ck.active_heldout_char_accuracy_pct
@@ -68,6 +99,9 @@
       $("healthBanner").innerHTML =
         `<span class="warn">Service not reachable.</span> Start with ` +
         `<code>.\\.venv\\Scripts\\python.exe scripts\\run_judge_demo_server.py --port 8766 --preload-model</code>`;
+      if ($("livePillText")) {
+        $("livePillText").textContent = "Offline";
+      }
     }
     loadSamples();
   }
@@ -206,11 +240,12 @@
       lastCheckpoint = data.checkpoint || "";
       $("recText").value =
         text ||
-        "(No readable text returned. Try a clearer single-line crop, or uncheck single-line for full pages.)";
+        "(No reliable draft kept. See per-line attempts below — alphabet drills often confuse this English-word model.)";
       $("recTime").textContent =
         data.inference_time_s != null ? `(${data.inference_time_s}s)` : "";
       $("recNote").textContent =
         (data.recognition && data.recognition.segmentation_note) || data.storage_note || "";
+      renderLines((data.recognition && data.recognition.lines) || []);
       $("recMeta").textContent = JSON.stringify(
         {
           checkpoint: data.checkpoint,
@@ -224,7 +259,9 @@
       );
       setStatus(
         $("recStatus"),
-        text ? "Recognition finished — edit the draft if needed, then save correction." : "Finished, but no usable text — try another crop.",
+        text
+          ? "Recognition finished — edit the draft if needed, then save correction."
+          : "No reliable combined draft — check per-line results or try a sentence crop.",
         text ? "ok" : "warn"
       );
     } catch (err) {
@@ -304,27 +341,48 @@
   $("btnLegacySave").addEventListener("click", async () => {
     const f = $("legFile").files && $("legFile").files[0];
     if (!f) {
-      $("legResult").textContent = "Choose a paper image first.";
+      renderArchiveSummary(null);
+      if ($("legResultView")) {
+        $("legResultView").innerHTML =
+          `<p class="empty-title">Choose a paper image first</p>` +
+          `<p class="muted">Select a scan or photo, then fill clinician and patient details.</p>`;
+      }
       return;
     }
     const fd = new FormData();
     fd.append("image", f, f.name);
     fd.append("doctor_id", $("legDoctor").value.trim());
     fd.append("patient_id", $("legPatient").value.trim());
+    fd.append("doctor_name", ($("legDoctorName") && $("legDoctorName").value.trim()) || "");
+    fd.append("patient_name", ($("legPatientName") && $("legPatientName").value.trim()) || "");
     fd.append("note", $("legNote").value.trim());
     try {
       const data = await getJSON("/api/legacy/save", { method: "POST", body: fd });
-      $("legResult").textContent = JSON.stringify(data.record, null, 2);
+      renderArchiveSummary(data.record);
       refreshRecords();
     } catch (err) {
-      $("legResult").textContent = "Error: " + err.message;
+      if ($("legResultView")) {
+        $("legResultView").className = "archive-empty";
+        $("legResultView").innerHTML =
+          `<p class="empty-title">Save failed</p>` +
+          `<p class="warn">${escapeHtml(err.message)}</p>`;
+      }
+      if ($("legResult")) {
+        $("legResult").classList.add("hidden");
+        $("legResult").textContent = "";
+      }
     }
   });
 
   $("btnLegacyRecognize").addEventListener("click", () => {
     const f = $("legFile").files && $("legFile").files[0];
     if (!f) {
-      $("legResult").textContent = "Choose a paper image first.";
+      if ($("legResultView")) {
+        $("legResultView").className = "archive-empty";
+        $("legResultView").innerHTML =
+          `<p class="empty-title">Choose a paper image first</p>` +
+          `<p class="muted">Then use Recognize this image to open the Recognition tab.</p>`;
+      }
       return;
     }
     const dt = new DataTransfer();
@@ -349,14 +407,24 @@
         const row = document.createElement("div");
         row.className = "record-item";
         const left = document.createElement("div");
+        const clinicianLabel = [rec.doctorName, rec.doctorId].filter(Boolean).join(" · ");
+        const patientLabel = [rec.patientName, rec.patientId].filter(Boolean).join(" · ");
+        const typeLabel =
+          rec.type === "legacy_paper"
+            ? "Paper archive"
+            : rec.type === "transcription_correction"
+              ? "Correction"
+              : rec.type === "digital_rx"
+                ? "Prescription pad"
+                : rec.type || "Record";
         const summary =
           rec.type === "transcription_correction"
             ? escapeHtml((rec.correctedText || "").slice(0, 80))
-            : `<span class="muted">${escapeHtml(rec.doctorId || "")} · ${escapeHtml(
-                rec.patientId || rec.patientName || ""
+            : `<span class="muted">Clinician: ${escapeHtml(clinicianLabel || "—")} · Patient: ${escapeHtml(
+                patientLabel || "—"
               )}</span>`;
         left.innerHTML =
-          `<strong>${escapeHtml(rec.type || "record")}</strong> · ${escapeHtml(rec.id)}<br/>` +
+          `<strong>${escapeHtml(typeLabel)}</strong> · ${escapeHtml(rec.id)}<br/>` +
           `<span class="muted">${escapeHtml(rec.createdAt || "")}</span><br/>` +
           summary;
         const actions = document.createElement("div");
@@ -395,6 +463,31 @@
     } catch (err) {
       box.innerHTML = `<p class="warn">${escapeHtml(err.message)}</p>`;
     }
+  }
+
+  function renderLines(lines) {
+    const box = $("recLines");
+    if (!box) return;
+    box.innerHTML = "";
+    if (!lines || !lines.length) {
+      box.classList.add("hidden");
+      return;
+    }
+    box.classList.remove("hidden");
+    const title = document.createElement("p");
+    title.className = "muted small";
+    title.textContent = "Per-line attempts (top → bottom):";
+    box.appendChild(title);
+    lines.forEach((ln) => {
+      const row = document.createElement("div");
+      const st = ln.status || "unknown";
+      row.className = "rec-line-item " + st;
+      const shown = (ln.text || "").trim() || "(empty)";
+      row.innerHTML =
+        `<span class="tag">L${escapeHtml(ln.line_index)} · ${escapeHtml(st)}</span>` +
+        `<span>${escapeHtml(shown)}</span>`;
+      box.appendChild(row);
+    });
   }
 
   function escapeHtml(s) {

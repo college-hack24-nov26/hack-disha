@@ -3,93 +3,127 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-  <title>DISHA Handwriting Recognition — Testing</title>
+  <title>DISHA — Clinician handwriting workspace</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700&family=Fraunces:opsz,wght@9..144,500;9..144,700&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="/static/styles.css" />
 </head>
 <body>
-  <div class="app">
-    <header class="hero">
-      <p class="eyebrow">DISHA · clinician tooling</p>
-      <h1>Testing &amp; improving handwriting recognition</h1>
-      <p class="hero-sub">
-        Use this workspace to test clinician handwriting capture, review draft transcriptions, and improve quality.
-        Separate from the patient-facing DISHA app — results are drafts for review only.
-      </p>
+  <div class="shell">
+    <header class="topbar">
+      <div class="brand-block">
+        <p class="brand-mark">DISHA</p>
+        <p class="brand-sub">Clinician handwriting workspace</p>
+      </div>
+      <div class="live-pill" id="livePill" aria-live="polite">
+        <span class="live-dot" aria-hidden="true"></span>
+        <span id="livePillText">Connecting…</span>
+      </div>
     </header>
 
-    <div class="banner" id="healthBanner">Checking service…</div>
+    <section class="hero">
+      <h1>Handwriting recognition for clinic workflows</h1>
+      <p class="hero-sub">
+        Capture paper or digital handwriting, review the draft transcription, and keep originals intact.
+        This workspace is for clinicians and reviewers — not the patient app.
+      </p>
+    </section>
 
-    <nav class="tabs" role="tablist">
-      <button class="tab active" data-tab="overview">Overview</button>
-      <button class="tab" data-tab="recognize">Handwriting recognition</button>
-      <button class="tab" data-tab="digital">Prescription pad</button>
-      <button class="tab" data-tab="legacy">Paper archive</button>
-      <button class="tab" data-tab="records">Saved records</button>
+    <div class="status-strip" id="healthBanner">Checking service…</div>
+
+    <nav class="tabs" role="tablist" aria-label="Workspace sections">
+      <button class="tab active" data-tab="overview" type="button">Overview</button>
+      <button class="tab" data-tab="recognize" type="button">Recognition</button>
+      <button class="tab" data-tab="digital" type="button">Prescription pad</button>
+      <button class="tab" data-tab="legacy" type="button">Paper archive</button>
+      <button class="tab" data-tab="records" type="button">Saved records</button>
     </nav>
 
     <section class="panel active" id="panel-overview">
-      <h2>What this testing build covers</h2>
+      <h2>Workspace overview</h2>
       <p class="lead">
-        Exercise recognition, digital writing, and paper archival. Treat AI text as a draft to review and correct.
-        Held-out accuracy is improving with domain fine-tuning — keep checking the live metric below.
+        Use each section below for a real clinic-style pass: recognize handwriting, write on the pad,
+        archive a paper prescription, then review what was saved.
       </p>
       <div class="metric-row">
-        <div>
+        <div class="metric">
           <strong id="metricActive">—</strong>
-          <span>Active model held-out character accuracy</span>
+          <span>Active model held-out accuracy</span>
         </div>
-        <div>
+        <div class="metric">
           <strong id="metricGoal">70–80%</strong>
-          <span>Improvement target on the same held-out set</span>
+          <span>Accuracy target on the same held-out set</span>
         </div>
       </div>
-      <ul class="simple-list">
-        <li><strong>Handwriting recognition</strong> — upload or try a sample line; edit and save corrections.</li>
-        <li><strong>Prescription pad</strong> — write digitally; recognize the canvas into a typed draft.</li>
-        <li><strong>Paper archive</strong> — store a paper prescription image unchanged.</li>
-      </ul>
+      <div class="flow-grid">
+        <article class="flow-item">
+          <h3>1. Recognition</h3>
+          <p>Upload a line or notebook page. Edit the draft and save corrections.</p>
+        </article>
+        <article class="flow-item">
+          <h3>2. Prescription pad</h3>
+          <p>Write digitally, then run recognition on the canvas into a typed draft.</p>
+        </article>
+        <article class="flow-item">
+          <h3>3. Paper archive</h3>
+          <p>Store the original paper image unchanged, with clear clinician and patient IDs.</p>
+        </article>
+      </div>
       <p class="muted small" id="checkpointInfo">Loading model info…</p>
     </section>
 
     <section class="panel" id="panel-recognize">
-      <h2>Handwriting recognition</h2>
-      <p class="lead">
-        Upload a handwriting image, or tap a sample line below. Prefer a clear single-line crop for best drafts.
-      </p>
+      <div class="panel-head">
+        <div>
+          <h2>Handwriting recognition</h2>
+          <p class="lead">
+            Upload a handwriting image, or pick a sample. Prefer a clear single-line crop when possible;
+            leave single-line mode off for multi-line notebook pages.
+          </p>
+        </div>
+      </div>
       <div class="sample-row" id="sampleRow" aria-label="Quick test samples"></div>
       <div class="grid-2">
-        <div>
-          <label class="field">Image (PNG / JPG)
-            <input type="file" id="recFile" accept=".png,.jpg,.jpeg,image/png,image/jpeg" />
-          </label>
-          <label class="field check">
-            <input type="checkbox" id="recForceSingle" checked />
-            <span>Single-line mode (faster · recommended for cropped lines)</span>
-          </label>
-          <label class="field check">
-            <input type="checkbox" id="recAuto" checked />
-            <span>Recognize automatically after choosing an image</span>
-          </label>
-          <div class="btn-row">
-            <button class="btn btn-primary" id="btnRecognize" type="button">Recognize</button>
-            <button class="btn" id="btnCopyDraft" type="button">Copy draft</button>
-            <button class="btn" id="btnSaveCorrection" type="button">Save correction</button>
+        <div class="work-col">
+          <div class="section-block">
+            <h3 class="section-title">Input</h3>
+            <label class="field">Handwriting image
+              <span class="field-hint">PNG or JPG</span>
+              <input type="file" id="recFile" accept=".png,.jpg,.jpeg,image/png,image/jpeg" />
+            </label>
+            <label class="field check">
+              <input type="checkbox" id="recForceSingle" />
+              <span>Single-line mode only <em>(one cropped line · leave off for full pages)</em></span>
+            </label>
+            <label class="field check">
+              <input type="checkbox" id="recAuto" checked />
+              <span>Recognize automatically after choosing an image</span>
+            </label>
+            <div class="btn-row">
+              <button class="btn btn-primary" id="btnRecognize" type="button">Recognize</button>
+              <button class="btn" id="btnCopyDraft" type="button">Copy draft</button>
+              <button class="btn" id="btnSaveCorrection" type="button">Save correction</button>
+            </div>
+            <div class="progress hidden" id="recProgress" aria-live="polite">
+              <div class="progress-bar"></div>
+              <p id="recProgressText">Working…</p>
+            </div>
           </div>
-          <div class="progress hidden" id="recProgress" aria-live="polite">
-            <div class="progress-bar"></div>
-            <p id="recProgressText">Working…</p>
-          </div>
-          <div class="preview-box" id="recPreview"><p class="muted">Preview appears here.</p></div>
+          <div class="preview-box" id="recPreview"><p class="muted">Image preview appears here.</p></div>
         </div>
-        <div>
-          <div class="result-box">
-            <p>
-              <strong>Transcription draft</strong>
-              <span class="muted" id="recTime"></span>
+        <div class="work-col">
+          <div class="result-box draft-panel">
+            <div class="result-head">
+              <div>
+                <strong>Transcription draft</strong>
+                <span class="muted" id="recTime"></span>
+              </div>
               <span class="draft-badge">Editable · needs clinician review</span>
-            </p>
-            <textarea id="recText" placeholder="Result appears here — edit if needed…"></textarea>
+            </div>
+            <textarea id="recText" placeholder="Draft transcription appears here — edit if needed…"></textarea>
             <p class="muted" id="recNote"></p>
+            <div id="recLines" class="rec-lines hidden" aria-live="polite"></div>
             <details class="meta-details">
               <summary>Technical details</summary>
               <pre class="mono" id="recMeta"></pre>
@@ -101,55 +135,101 @@
     </section>
 
     <section class="panel" id="panel-digital">
-      <h2>Digital prescription pad</h2>
-      <p class="lead">
-        Write with mouse, touchpad, or finger. Original strokes are preserved.
-        Use <strong>Recognize handwriting</strong> on the pad to fill the typed draft from the canvas.
-        <a href="/pad/" target="_blank" rel="noopener">Open full pad</a>
-      </p>
+      <div class="panel-head">
+        <div>
+          <h2>Prescription pad</h2>
+          <p class="lead">
+            Write with mouse, touchpad, or finger. Original strokes stay preserved.
+            Use <strong>Recognize handwriting</strong> on the pad to fill the typed draft.
+          </p>
+        </div>
+        <a class="btn" href="/pad/" target="_blank" rel="noopener">Open full pad</a>
+      </div>
       <iframe class="pad-frame" title="Digital prescription pad" src="/pad/"></iframe>
     </section>
 
     <section class="panel" id="panel-legacy">
-      <h2>Paper prescription archive</h2>
-      <p class="lead">
-        Upload an existing paper prescription. The original image is stored unchanged.
-        You can also run recognition afterward from the Handwriting recognition tab.
-      </p>
-      <div class="grid-2">
+      <div class="panel-head">
         <div>
-          <label class="field">Paper image
-            <input type="file" id="legFile" accept=".png,.jpg,.jpeg,image/png,image/jpeg" />
-          </label>
-          <label class="field">Clinician reference ID
-            <input type="text" id="legDoctor" value="clinician_test" />
-          </label>
-          <label class="field">Patient reference ID (synthetic test data)
-            <input type="text" id="legPatient" value="TEST-P-001" />
-          </label>
-          <label class="field">Note (optional)
-            <input type="text" id="legNote" placeholder="e.g. scanned test sheet" />
-          </label>
+          <h2>Paper prescription archive</h2>
+          <p class="lead">
+            Upload an existing paper prescription. The original image is stored unchanged.
+            Fill clinician and patient details clearly before saving.
+          </p>
+        </div>
+      </div>
+
+      <div class="grid-2">
+        <div class="work-col">
+          <div class="section-block">
+            <h3 class="section-title">Paper image</h3>
+            <label class="field">Upload scan or photo
+              <span class="field-hint">PNG or JPG · original kept as-is</span>
+              <input type="file" id="legFile" accept=".png,.jpg,.jpeg,image/png,image/jpeg" />
+            </label>
+          </div>
+
+          <div class="section-block identity-block">
+            <h3 class="section-title">Who this record belongs to</h3>
+            <div class="identity-grid">
+              <div class="identity-card">
+                <p class="identity-role">Clinician</p>
+                <label class="field">Full name
+                  <input type="text" id="legDoctorName" placeholder="e.g. Dr. Asha Rao" autocomplete="name" />
+                </label>
+                <label class="field">Clinician ID
+                  <span class="field-hint">Internal reference used in this workspace</span>
+                  <input type="text" id="legDoctor" value="clinician_test" autocomplete="off" />
+                </label>
+              </div>
+              <div class="identity-card">
+                <p class="identity-role">Patient</p>
+                <label class="field">Full name
+                  <input type="text" id="legPatientName" placeholder="e.g. Ravi Kumar" autocomplete="off" />
+                </label>
+                <label class="field">Patient ID
+                  <span class="field-hint">Chart / MRN-style reference for this save</span>
+                  <input type="text" id="legPatient" value="TEST-P-001" autocomplete="off" />
+                </label>
+              </div>
+            </div>
+            <label class="field">Note <span class="optional">(optional)</span>
+              <input type="text" id="legNote" placeholder="e.g. morning clinic scan · page 1" />
+            </label>
+          </div>
+
           <div class="btn-row">
             <button class="btn btn-primary" id="btnLegacySave" type="button">Save original</button>
             <button class="btn" id="btnLegacyRecognize" type="button">Recognize this image</button>
           </div>
-          <div class="preview-box" id="legPreview"><p class="muted">Preview appears here.</p></div>
+          <div class="preview-box" id="legPreview"><p class="muted">Paper preview appears here after you choose a file.</p></div>
         </div>
-        <div class="result-box">
-          <pre class="mono" id="legResult">No archive save yet.</pre>
+
+        <div class="work-col">
+          <div class="result-box archive-result">
+            <div class="result-head">
+              <strong>Archive status</strong>
+            </div>
+            <div id="legResultView" class="archive-empty">
+              <p class="empty-title">No archive save yet</p>
+              <p class="muted">After you save, clinician, patient, and file details show here in a clear summary.</p>
+            </div>
+            <pre class="mono hidden" id="legResult"></pre>
+          </div>
         </div>
       </div>
     </section>
 
     <section class="panel" id="panel-records">
-      <h2>Saved records</h2>
-      <p class="lead">
-        Local testing storage on this machine under <code>judge_demo_data/</code> —
-        not the production DISHA database. Includes digital Rx, paper archives, and draft corrections.
-      </p>
-      <div class="btn-row">
-        <button class="btn" id="btnRefreshRecords" type="button">Refresh</button>
+      <div class="panel-head">
+        <div>
+          <h2>Saved records</h2>
+          <p class="lead">
+            Local workspace storage on this machine under <code>judge_demo_data/</code>
+            — digital pads, paper archives, and draft corrections. Not the production DISHA database.
+          </p>
+        </div>
+        <button class="btn" id="btnRefreshRecords" type="button">Refresh list</button>
       </div>
       <div class="record-list" id="recordList"></div>
       <div id="recordPreview" class="record-preview hidden" aria-live="polite"></div>

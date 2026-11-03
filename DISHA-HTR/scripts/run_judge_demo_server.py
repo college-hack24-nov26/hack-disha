@@ -418,6 +418,8 @@ class Handler(BaseHTTPRequestHandler):
         raw = item.data
         patient_id = str(form.get("patient_id") or "TEST-P-LEGACY").strip()
         doctor_id = str(form.get("doctor_id") or "clinician_test").strip()
+        patient_name = str(form.get("patient_name") or "").strip()[:120]
+        doctor_name = str(form.get("doctor_name") or "").strip()[:120]
         note = str(form.get("note") or "").strip()
 
         rid = f"legacy_{datetime.now().strftime('%Y%m%d_%H%M%S')}_{uuid.uuid4().hex[:8]}"
@@ -433,7 +435,9 @@ class Handler(BaseHTTPRequestHandler):
             "type": "legacy_paper",
             "createdAt": utc_now(),
             "doctorId": doctor_id,
+            "doctorName": doctor_name,
             "patientId": patient_id,
+            "patientName": patient_name,
             "originalFilename": filename,
             "storedAs": dest_name,
             "originalPath": str(dest.relative_to(ROOT)),
