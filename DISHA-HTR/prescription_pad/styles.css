@@ -66,6 +66,12 @@ body.drawing-lock {
   max-width: 42rem;
 }
 
+.pad-rec-status {
+  margin: 0.35rem 1rem 0.15rem;
+  font-size: 0.84rem;
+  min-height: 1.2em;
+}
+
 .rx-sheet {
   background: var(--paper);
   border: 1px solid var(--line);

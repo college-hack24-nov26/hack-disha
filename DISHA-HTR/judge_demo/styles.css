@@ -293,3 +293,31 @@ html, body {
 .muted { color: var(--muted); }
 .small { font-size: 0.78rem; }
 .warn { color: var(--warn); }
+
+.sample-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  align-items: center;
+  margin: 0 0 0.85rem;
+}
+.sample-label {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--muted);
+  margin-right: 0.15rem;
+}
+.sample-chip {
+  border: 1px solid var(--line);
+  background: #fff;
+  border-radius: 999px;
+  padding: 0.28rem 0.65rem;
+  font: inherit;
+  font-size: 0.78rem;
+  cursor: pointer;
+  color: var(--ink);
+}
+.sample-chip:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}

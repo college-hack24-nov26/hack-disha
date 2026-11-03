@@ -18,6 +18,11 @@
     });
   });
 
+  function switchTab(name) {
+    const btn = document.querySelector('.tab[data-tab="' + name + '"]');
+    if (btn) btn.click();
+  }
+
   async function getJSON(url, options) {
     const res = await fetch(url, options || {});
     const text = await res.text();
@@ -31,30 +36,91 @@
     return data;
   }
 
+  let lastOriginalText = "";
+  let lastFilename = "";
+  let lastCheckpoint = "";
+
   async function boot() {
     try {
       const health = await getJSON("/api/health");
       const modelReady = health.model_loaded ? "model ready" : "model loads on first recognize";
+      const acc =
+        health.heldout_char_accuracy_pct != null
+          ? health.heldout_char_accuracy_pct
+          : health.heldout_char_accuracy_pct_base;
       $("healthBanner").innerHTML =
         `<span class="ok">Service online</span> · ` +
         `testing workspace · ${modelReady} · held-out accuracy ` +
-        `<strong>${health.heldout_char_accuracy_pct_base}%</strong>`;
+        `<strong>${acc}%</strong>`;
       const ck = await getJSON("/api/checkpoint");
       $("checkpointInfo").textContent =
-        "Model: " + (ck.selected || "") + " · comparisons: " + JSON.stringify(ck.comparisons || {});
-      $("metricBase").textContent = (ck.comparisons && ck.comparisons.base != null ? ck.comparisons.base : 14.01) + "%";
+        "Active model: " +
+        (ck.selected || "") +
+        " · " +
+        (ck.reason || "") +
+        " · comparisons: " +
+        JSON.stringify(ck.comparisons || {});
+      $("metricActive").textContent =
+        (ck.active_heldout_char_accuracy_pct != null
+          ? ck.active_heldout_char_accuracy_pct
+          : acc) + "%";
     } catch (err) {
       $("healthBanner").innerHTML =
         `<span class="warn">Service not reachable.</span> Start with ` +
         `<code>.\\.venv\\Scripts\\python.exe scripts\\run_judge_demo_server.py --port 8766 --preload-model</code>`;
+    }
+    loadSamples();
+  }
+
+  async function loadSamples() {
+    const row = $("sampleRow");
+    if (!row) return;
+    try {
+      const data = await getJSON("/api/samples");
+      row.innerHTML = "";
+      if (!data.samples || !data.samples.length) {
+        row.innerHTML = '<p class="muted small">No sample images found under demo/approved.</p>';
+        return;
+      }
+      const label = document.createElement("span");
+      label.className = "sample-label";
+      label.textContent = "Quick samples:";
+      row.appendChild(label);
+      data.samples.slice(0, 8).forEach((s) => {
+        const btn = document.createElement("button");
+        btn.type = "button";
+        btn.className = "sample-chip";
+        btn.textContent = s.label.replace(/^demo \d+ /i, "").slice(0, 28);
+        btn.title = s.id;
+        btn.addEventListener("click", () => useSample(s));
+        row.appendChild(btn);
+      });
+    } catch (err) {
+      row.innerHTML = '<p class="muted small">Samples unavailable.</p>';
+    }
+  }
+
+  async function useSample(sample) {
+    try {
+      const res = await fetch(sample.url);
+      if (!res.ok) throw new Error("Could not load sample");
+      const blob = await res.blob();
+      const file = new File([blob], sample.id, { type: "image/png" });
+      const dt = new DataTransfer();
+      dt.items.add(file);
+      $("recFile").files = dt.files;
+      showPreview(file);
+      setStatus($("recStatus"), "Sample loaded: " + sample.id, "ok");
+      if ($("recAuto").checked) runRecognize(file);
+    } catch (err) {
+      setStatus($("recStatus"), "Sample error: " + err.message, "warn");
     }
   }
 
   let recObjectUrl = null;
   let recognizing = false;
 
-  $("recFile").addEventListener("change", () => {
-    const f = $("recFile").files && $("recFile").files[0];
+  function showPreview(f) {
     const box = $("recPreview");
     if (recObjectUrl) URL.revokeObjectURL(recObjectUrl);
     if (!f) {
@@ -67,7 +133,14 @@
     img.alt = "Upload preview";
     img.src = recObjectUrl;
     box.appendChild(img);
-    setStatus($("recStatus"), "Image ready. Click Recognize.", "ok");
+  }
+
+  $("recFile").addEventListener("change", () => {
+    const f = $("recFile").files && $("recFile").files[0];
+    showPreview(f);
+    if (!f) return;
+    setStatus($("recStatus"), "Image ready.", "ok");
+    if ($("recAuto").checked) runRecognize(f);
   });
 
   function setRecognizing(on, label) {
@@ -84,9 +157,9 @@
     }
   }
 
-  $("btnRecognize").addEventListener("click", async () => {
+  async function runRecognize(file) {
     if (recognizing) return;
-    const f = $("recFile").files && $("recFile").files[0];
+    const f = file || ($("recFile").files && $("recFile").files[0]);
     if (!f) {
       setStatus($("recStatus"), "Choose an image first.", "warn");
       return;
@@ -101,8 +174,11 @@
     $("recMeta").textContent = "";
     $("recTime").textContent = "";
     $("recNote").textContent = "";
+    lastOriginalText = "";
+    lastFilename = f.name;
+    lastCheckpoint = "";
     setRecognizing(true, "Uploading image…");
-    setStatus($("recStatus"), "Please wait — first run can take 30–90s while the model loads.", "");
+    setStatus($("recStatus"), "Recognizing…", "");
 
     const fd = new FormData();
     fd.append("image", f, f.name);
@@ -115,9 +191,9 @@
     try {
       setTimeout(() => {
         if (recognizing) {
-          $("recProgressText").textContent = "Running recognition (model may still be loading)…";
+          $("recProgressText").textContent = "Running recognition…";
         }
-      }, 2500);
+      }, 2000);
 
       const data = await getJSON("/api/recognize", {
         method: "POST",
@@ -126,7 +202,11 @@
       });
 
       const text = (data.text || "").trim();
-      $("recText").value = text || "(No readable text returned. Try a clearer single-line crop, or uncheck single-line for full pages.)";
+      lastOriginalText = text;
+      lastCheckpoint = data.checkpoint || "";
+      $("recText").value =
+        text ||
+        "(No readable text returned. Try a clearer single-line crop, or uncheck single-line for full pages.)";
       $("recTime").textContent =
         data.inference_time_s != null ? `(${data.inference_time_s}s)` : "";
       $("recNote").textContent =
@@ -134,6 +214,7 @@
       $("recMeta").textContent = JSON.stringify(
         {
           checkpoint: data.checkpoint,
+          selection: data.selection,
           mode: data.recognition && data.recognition.mode,
           n_lines: data.recognition && data.recognition.n_lines_detected,
           lines: (data.recognition && data.recognition.lines) || [],
@@ -143,7 +224,7 @@
       );
       setStatus(
         $("recStatus"),
-        text ? "Recognition finished." : "Finished, but no usable text — try another crop.",
+        text ? "Recognition finished — edit the draft if needed, then save correction." : "Finished, but no usable text — try another crop.",
         text ? "ok" : "warn"
       );
     } catch (err) {
@@ -159,6 +240,47 @@
     } finally {
       clearTimeout(timer);
       setRecognizing(false);
+    }
+  }
+
+  $("btnRecognize").addEventListener("click", () => runRecognize());
+
+  $("btnCopyDraft").addEventListener("click", async () => {
+    const text = $("recText").value.trim();
+    if (!text) {
+      setStatus($("recStatus"), "Nothing to copy.", "warn");
+      return;
+    }
+    try {
+      await navigator.clipboard.writeText(text);
+      setStatus($("recStatus"), "Draft copied.", "ok");
+    } catch {
+      $("recText").select();
+      setStatus($("recStatus"), "Select-all ready — press Ctrl+C.", "");
+    }
+  });
+
+  $("btnSaveCorrection").addEventListener("click", async () => {
+    const corrected = $("recText").value.trim();
+    if (!corrected) {
+      setStatus($("recStatus"), "Edit or recognize a draft before saving a correction.", "warn");
+      return;
+    }
+    try {
+      const data = await getJSON("/api/corrections", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          originalText: lastOriginalText,
+          correctedText: corrected,
+          filename: lastFilename,
+          checkpoint: lastCheckpoint,
+        }),
+      });
+      setStatus($("recStatus"), "Correction saved locally as " + data.record.id, "ok");
+      refreshRecords();
+    } catch (err) {
+      setStatus($("recStatus"), "Save failed: " + err.message, "warn");
     }
   });
 
@@ -199,6 +321,21 @@
     }
   });
 
+  $("btnLegacyRecognize").addEventListener("click", () => {
+    const f = $("legFile").files && $("legFile").files[0];
+    if (!f) {
+      $("legResult").textContent = "Choose a paper image first.";
+      return;
+    }
+    const dt = new DataTransfer();
+    dt.items.add(f);
+    $("recFile").files = dt.files;
+    showPreview(f);
+    $("recForceSingle").checked = false;
+    switchTab("recognize");
+    runRecognize(f);
+  });
+
   async function refreshRecords() {
     const list = $("recordList");
     try {
@@ -212,16 +349,21 @@
         const row = document.createElement("div");
         row.className = "record-item";
         const left = document.createElement("div");
+        const summary =
+          rec.type === "transcription_correction"
+            ? escapeHtml((rec.correctedText || "").slice(0, 80))
+            : `<span class="muted">${escapeHtml(rec.doctorId || "")} · ${escapeHtml(
+                rec.patientId || rec.patientName || ""
+              )}</span>`;
         left.innerHTML =
           `<strong>${escapeHtml(rec.type || "record")}</strong> · ${escapeHtml(rec.id)}<br/>` +
-          `<span class="muted">${escapeHtml(rec.createdAt || "")} · ${escapeHtml(
-            rec.doctorId || ""
-          )} · ${escapeHtml(rec.patientId || rec.patientName || "")}</span>`;
+          `<span class="muted">${escapeHtml(rec.createdAt || "")}</span><br/>` +
+          summary;
         const actions = document.createElement("div");
         const btnOpen = document.createElement("button");
         btnOpen.type = "button";
         btnOpen.className = "btn";
-        btnOpen.textContent = "Open";
+        btnOpen.textContent = rec.type === "transcription_correction" ? "View" : "Open";
         btnOpen.addEventListener("click", () => openRecordOriginal(rec));
         actions.appendChild(btnOpen);
         row.appendChild(left);
@@ -237,6 +379,13 @@
     const box = $("recordPreview");
     if (!box) return;
     box.classList.remove("hidden");
+    if (rec.type === "transcription_correction") {
+      box.innerHTML =
+        `<p><strong>Correction</strong> · ${escapeHtml(rec.id)}</p>` +
+        `<p class="muted">Original</p><pre class="mono">${escapeHtml(rec.originalText || "")}</pre>` +
+        `<p class="muted">Corrected</p><pre class="mono">${escapeHtml(rec.correctedText || "")}</pre>`;
+      return;
+    }
     box.innerHTML = "<p class='muted'>Loading…</p>";
     try {
       const imgUrl = "/api/records/" + encodeURIComponent(rec.id) + "/file?kind=png";

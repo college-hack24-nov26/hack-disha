@@ -647,8 +647,55 @@
     el.addEventListener("input", syncFooter)
   );
 
+  async function recognizeCanvasDraft() {
+    const status = document.getElementById("padRecStatus");
+    if (!strokes.length) {
+      if (status) status.textContent = "Write something before recognizing.";
+      return;
+    }
+    if (status) status.textContent = "Recognizing handwriting…";
+    const blob = await new Promise((resolve) => {
+      canvas.toBlob((b) => resolve(b), "image/png");
+    });
+    if (!blob) {
+      if (status) status.textContent = "Could not export canvas.";
+      return;
+    }
+    const fd = new FormData();
+    fd.append("image", blob, `pad_${Date.now()}.png`);
+    fd.append("force_single_line", "false");
+    try {
+      const res = await fetch("/api/recognize", { method: "POST", body: fd });
+      const text = await res.text();
+      let data;
+      try {
+        data = JSON.parse(text);
+      } catch {
+        throw new Error(text.slice(0, 160) || res.statusText);
+      }
+      if (!res.ok) throw new Error(data.error || data.detail || res.statusText);
+      const draft = (data.text || "").trim();
+      draftTranscription.value = draft;
+      if (status) {
+        status.textContent = draft
+          ? `Draft filled (${data.inference_time_s != null ? data.inference_time_s + "s" : "done"}). Review before saving.`
+          : "No text returned — try larger writing or a clearer line.";
+      }
+    } catch (err) {
+      if (status) {
+        status.textContent =
+          "Recognition unavailable (" +
+          (err && err.message ? err.message : String(err)) +
+          "). Start the testing server if needed.";
+      }
+    }
+  }
+
   document.getElementById("btnUndo").addEventListener("click", undo);
   document.getElementById("btnClear").addEventListener("click", clearCanvas);
+  document.getElementById("btnRecognizePad").addEventListener("click", () => {
+    recognizeCanvasDraft().catch((err) => window.alert(String(err)));
+  });
   document.getElementById("btnSave").addEventListener("click", () => {
     savePrescription().catch((err) => window.alert(String(err)));
   });

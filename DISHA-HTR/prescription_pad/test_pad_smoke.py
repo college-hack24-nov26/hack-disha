@@ -23,6 +23,8 @@ class TestPrescriptionPadSmoke(unittest.TestCase):
         self.assertIn("btnUndo", html)
         self.assertIn("btnClear", html)
         self.assertIn("btnSave", html)
+        self.assertIn("btnRecognizePad", html)
+        self.assertIn("Recognize handwriting", html)
         self.assertIn("draftDiagnosis", html)
         self.assertIn("draftTranscription", html)
         self.assertIn("does not alter handwriting", html)

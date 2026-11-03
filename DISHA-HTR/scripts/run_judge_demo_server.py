@@ -33,11 +33,13 @@ sys.path.insert(0, str(ROOT / "src"))
 
 from disha_htr.multipart_util import FormFile, parse_multipart  # noqa: E402
 
-# Best measured held-out checkpoint (identical 8-image eval): base 14.01%
-BEST_GENERAL_CHECKPOINT = ROOT / "checkpoints" / "trocr-small-handwritten"
+BASE_CHECKPOINT = ROOT / "checkpoints" / "trocr-small-handwritten"
+DOMAIN_BEST_CHECKPOINT = ROOT / "checkpoints" / "trocr-domain-70-best-heldout"
+DOMAIN_VAL_CHECKPOINT = ROOT / "checkpoints" / "trocr-domain-70"
 DEMO_DATA = ROOT / "judge_demo_data"
 STATIC_DIR = ROOT / "judge_demo"
 PAD_DIR = ROOT / "prescription_pad"
+SAMPLES_DIR = ROOT / "demo" / "approved"
 ALLOWED_EXT = {".png", ".jpg", ".jpeg"}
 MAX_UPLOAD_BYTES = 12 * 1024 * 1024
 
@@ -50,6 +52,54 @@ def utc_now() -> str:
     return datetime.now(timezone.utc).isoformat()
 
 
+def _has_weights(path: Path) -> bool:
+    return (path / "model.safetensors").is_file() or (path / "pytorch_model.bin").is_file()
+
+
+def _heldout_pct_from_snapshot(path: Path) -> float | None:
+    snap = path / "heldout_snapshot.json"
+    if not snap.is_file():
+        return None
+    try:
+        data = json.loads(snap.read_text(encoding="utf-8"))
+        val = data.get("heldout_char_acc_pct")
+        return float(val) if val is not None else None
+    except (OSError, ValueError, TypeError, json.JSONDecodeError):
+        return None
+
+
+def resolve_active_checkpoint() -> tuple[Path, float, str]:
+    """Prefer domain fine-tune when it beats the base held-out score."""
+    base_pct = 14.01
+    domain_pct = _heldout_pct_from_snapshot(DOMAIN_BEST_CHECKPOINT)
+    if domain_pct is not None and _has_weights(DOMAIN_BEST_CHECKPOINT) and domain_pct >= base_pct:
+        return (
+            DOMAIN_BEST_CHECKPOINT,
+            domain_pct,
+            "Domain fine-tune best-heldout snapshot (measured on identical 8-image set).",
+        )
+    if _has_weights(DOMAIN_VAL_CHECKPOINT):
+        # Fall back to domain-val weights only if snapshot exists elsewhere
+        meta = DOMAIN_VAL_CHECKPOINT / "train_meta.json"
+        if meta.is_file():
+            try:
+                m = json.loads(meta.read_text(encoding="utf-8"))
+                hp = m.get("best_heldout_char_acc_pct")
+                if hp is not None and float(hp) >= base_pct:
+                    return (
+                        DOMAIN_VAL_CHECKPOINT,
+                        float(hp),
+                        "Domain fine-tune checkpoint (held-out score from train meta).",
+                    )
+            except (OSError, ValueError, TypeError, json.JSONDecodeError):
+                pass
+    return (
+        BASE_CHECKPOINT,
+        base_pct,
+        "Base trocr-small-handwritten (held-out 14.01%).",
+    )
+
+
 def ensure_dirs() -> None:
     for p in (
         DEMO_DATA,
@@ -57,6 +107,7 @@ def ensure_dirs() -> None:
         DEMO_DATA / "legacy" / "originals",
         DEMO_DATA / "records",
         DEMO_DATA / "uploads",
+        DEMO_DATA / "corrections",
     ):
         p.mkdir(parents=True, exist_ok=True)
 
@@ -64,7 +115,7 @@ def ensure_dirs() -> None:
 def load_model(force_dir: Path | None = None):
     global _loaded, _loaded_source
     with _model_lock:
-        target = Path(force_dir) if force_dir else BEST_GENERAL_CHECKPOINT
+        target = Path(force_dir) if force_dir else resolve_active_checkpoint()[0]
         if _loaded is not None and _loaded_source == str(target):
             return _loaded
         from disha_htr.hardware import resolve_device
@@ -124,14 +175,17 @@ class Handler(BaseHTTPRequestHandler):
             return self._serve_file(PAD_DIR / rel)
 
         if path == "/api/health":
+            ckpt, pct, reason = resolve_active_checkpoint()
             status, body, ctype = json_bytes(
                 {
                     "ok": True,
                     "service": "disha-htr-testing",
                     "storage": "Local testing workspace — not the production DISHA database",
-                    "best_general_checkpoint": str(BEST_GENERAL_CHECKPOINT),
+                    "active_checkpoint": str(ckpt),
+                    "heldout_char_accuracy_pct": pct,
                     "heldout_char_accuracy_pct_base": 14.01,
-                    "target_char_accuracy_pct": "Improve drafts on new handwriting (held-out baseline 14.01%)",
+                    "target_char_accuracy_pct": "70-80% held-out character accuracy",
+                    "checkpoint_reason": reason,
                     "model_loaded": _loaded is not None,
                     "ts": utc_now(),
                 }
@@ -139,16 +193,16 @@ class Handler(BaseHTTPRequestHandler):
             return self._send(status, body, ctype)
 
         if path == "/api/checkpoint":
+            ckpt, pct, reason = resolve_active_checkpoint()
+            domain_pct = _heldout_pct_from_snapshot(DOMAIN_BEST_CHECKPOINT)
             status, body, ctype = json_bytes(
                 {
-                    "selected": str(BEST_GENERAL_CHECKPOINT),
-                    "reason": (
-                        "Base trocr-small-handwritten has the best measured "
-                        "held-out character accuracy (14.01%) among local "
-                        "checkpoints on the identical 8-image set."
-                    ),
+                    "selected": str(ckpt),
+                    "active_heldout_char_accuracy_pct": pct,
+                    "reason": reason,
                     "comparisons": {
                         "base": 14.01,
+                        "domain_best_heldout": domain_pct,
                         "improved_gen": 12.45,
                         "demo_finetuned": 7.62,
                     },
@@ -158,6 +212,13 @@ class Handler(BaseHTTPRequestHandler):
                 }
             )
             return self._send(status, body, ctype)
+
+        if path == "/api/samples":
+            return self._list_samples()
+
+        if path.startswith("/api/samples/") and path.count("/") == 3:
+            name = path[len("/api/samples/") :].strip("/")
+            return self._sample_file(name)
 
         if path.startswith("/api/doctor/") and path.endswith("/selection"):
             doctor_id = path[len("/api/doctor/") : -len("/selection")].strip("/")
@@ -187,6 +248,8 @@ class Handler(BaseHTTPRequestHandler):
                 return self._legacy_save()
             if path == "/api/records/digital":
                 return self._save_digital_record()
+            if path == "/api/corrections":
+                return self._save_correction()
             self._send(404, b'{"error":"not_found"}', "application/json")
         except Exception as exc:  # noqa: BLE001
             traceback.print_exc()
@@ -253,10 +316,11 @@ class Handler(BaseHTTPRequestHandler):
         tmp_path = tmp_dir / f"upload_{uuid.uuid4().hex}{ext}"
         tmp_path.write_bytes(raw)
 
-        checkpoint = BEST_GENERAL_CHECKPOINT
+        checkpoint, heldout_pct, ck_reason = resolve_active_checkpoint()
         selection = {
-            "source": "general",
-            "reason": "default_best_general",
+            "source": "active_general",
+            "reason": ck_reason,
+            "heldout_char_accuracy_pct": heldout_pct,
             "adapter_version": None,
         }
         if doctor_id:
@@ -271,7 +335,8 @@ class Handler(BaseHTTPRequestHandler):
                 else:
                     selection["source"] = "general_fallback"
                     selection["reason"] = "personalized_weights_missing"
-                    checkpoint = BEST_GENERAL_CHECKPOINT
+                    checkpoint, heldout_pct, ck_reason = resolve_active_checkpoint()
+                    selection["heldout_char_accuracy_pct"] = heldout_pct
 
         try:
             loaded = load_model(checkpoint)
@@ -318,7 +383,7 @@ class Handler(BaseHTTPRequestHandler):
                 "source": "general",
                 "reason": f"invalid_doctor_id: {exc}",
                 "doctor_id": doctor_id,
-                "checkpoint_dir": str(BEST_GENERAL_CHECKPOINT),
+                "checkpoint_dir": str(resolve_active_checkpoint()[0]),
                 "adapter_version": None,
             }
         try:
@@ -331,7 +396,7 @@ class Handler(BaseHTTPRequestHandler):
                 "source": "general_fallback",
                 "reason": f"selection_error: {exc}"[:200],
                 "doctor_id": did,
-                "checkpoint_dir": str(BEST_GENERAL_CHECKPOINT),
+                "checkpoint_dir": str(resolve_active_checkpoint()[0]),
                 "adapter_version": None,
             }
 
@@ -502,6 +567,66 @@ class Handler(BaseHTTPRequestHandler):
                 )
         self._send(404, b"missing", "text/plain")
 
+    def _list_samples(self) -> None:
+        items = []
+        if SAMPLES_DIR.is_dir():
+            for p in sorted(SAMPLES_DIR.glob("*.png"))[:24]:
+                items.append(
+                    {
+                        "id": p.name,
+                        "label": p.stem.replace("_", " "),
+                        "url": "/api/samples/" + p.name,
+                    }
+                )
+        status, body, ctype = json_bytes({"count": len(items), "samples": items})
+        self._send(status, body, ctype)
+
+    def _sample_file(self, name: str) -> None:
+        if ".." in name or "/" in name or "\\" in name:
+            self._send(400, b"bad name", "text/plain")
+            return
+        path = (SAMPLES_DIR / name).resolve()
+        try:
+            path.relative_to(SAMPLES_DIR.resolve())
+        except ValueError:
+            self._send(404, b"missing", "text/plain")
+            return
+        if not path.is_file():
+            self._send(404, b"missing", "text/plain")
+            return
+        self._send(200, path.read_bytes(), "image/png")
+
+    def _save_correction(self) -> None:
+        length = int(self.headers.get("Content-Length", "0"))
+        if length > MAX_UPLOAD_BYTES:
+            status, body, ctype = json_bytes({"error": "too_large"}, 400)
+            return self._send(status, body, ctype)
+        raw = self.rfile.read(length)
+        data = json.loads(raw.decode("utf-8"))
+        draft = str(data.get("correctedText") or data.get("text") or "").strip()
+        if not draft:
+            status, body, ctype = json_bytes({"error": "empty_correction"}, 400)
+            return self._send(status, body, ctype)
+        rid = f"correction_{datetime.now().strftime('%Y%m%d_%H%M%S')}_{uuid.uuid4().hex[:8]}"
+        record = {
+            "id": rid,
+            "type": "transcription_correction",
+            "createdAt": utc_now(),
+            "originalText": str(data.get("originalText") or "")[:2000],
+            "correctedText": draft[:4000],
+            "filename": str(data.get("filename") or "")[:200],
+            "checkpoint": str(data.get("checkpoint") or ""),
+            "note": "Clinician correction for testing/improvement — local only.",
+            "storageNote": "Local testing only — not the production DISHA database.",
+        }
+        out = DEMO_DATA / "corrections" / f"{rid}.json"
+        out.write_text(json.dumps(record, indent=2), encoding="utf-8")
+        (DEMO_DATA / "records" / f"{rid}.json").write_text(
+            json.dumps(record, indent=2), encoding="utf-8"
+        )
+        status, body, ctype = json_bytes({"ok": True, "record": record})
+        self._send(status, body, ctype)
+
 
 def main() -> int:
     parser = argparse.ArgumentParser(description="DISHA HTR testing server")
@@ -518,19 +643,22 @@ def main() -> int:
     if not STATIC_DIR.is_dir():
         print(f"Missing testing UI at {STATIC_DIR}", file=sys.stderr)
         return 2
-    if not BEST_GENERAL_CHECKPOINT.is_dir():
-        print(f"Missing checkpoint: {BEST_GENERAL_CHECKPOINT}", file=sys.stderr)
+    if not BASE_CHECKPOINT.is_dir():
+        print(f"Missing checkpoint: {BASE_CHECKPOINT}", file=sys.stderr)
         return 2
 
+    active, pct, reason = resolve_active_checkpoint()
     if args.preload_model:
-        print("Preloading best general checkpoint...")
-        load_model()
+        print(f"Preloading active checkpoint ({pct}% held-out)...")
+        print(reason)
+        load_model(active)
         print("Model ready.")
 
     httpd = ThreadingHTTPServer((args.host, args.port), Handler)
     print(f"DISHA HTR testing: http://127.0.0.1:{args.port}/")
     print(f"Phone (same Wi-Fi): http://<laptop-LAN-IP>:{args.port}/")
-    print(f"Checkpoint: {BEST_GENERAL_CHECKPOINT}")
+    print(f"Active checkpoint: {active}")
+    print(f"Held-out accuracy: {pct}%")
     print("Storage: local testing only under judge_demo_data/")
     try:
         httpd.serve_forever()

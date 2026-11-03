@@ -66,10 +66,12 @@
         </label>
         <button type="button" id="btnUndo" class="btn">Undo</button>
         <button type="button" id="btnClear" class="btn btn-warn">Clear</button>
+        <button type="button" id="btnRecognizePad" class="btn">Recognize handwriting</button>
         <button type="button" id="btnSave" class="btn btn-primary">Save prescription</button>
         <button type="button" id="btnExportPng" class="btn">Export PNG</button>
         <button type="button" id="btnExportJson" class="btn">Export strokes JSON</button>
       </div>
+      <p class="pad-rec-status muted" id="padRecStatus" aria-live="polite"></p>
 
       <div class="canvas-wrap" id="canvasWrap">
         <canvas id="rxCanvas" width="1000" height="560" aria-label="Handwriting prescription canvas"></canvas>

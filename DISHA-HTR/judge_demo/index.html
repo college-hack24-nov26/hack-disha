@@ -30,22 +30,22 @@
     <section class="panel active" id="panel-overview">
       <h2>What this testing build covers</h2>
       <p class="lead">
-        Exercise recognition, digital writing, and paper archival. Treat AI text as a draft to review and improve —
-        held-out accuracy is still low on new handwriting.
+        Exercise recognition, digital writing, and paper archival. Treat AI text as a draft to review and correct.
+        Held-out accuracy is improving with domain fine-tuning — keep checking the live metric below.
       </p>
       <div class="metric-row">
         <div>
-          <strong id="metricBase">14.01%</strong>
-          <span>Current held-out character accuracy (base model)</span>
+          <strong id="metricActive">—</strong>
+          <span>Active model held-out character accuracy</span>
         </div>
         <div>
-          <strong>Improve</strong>
-          <span>Goal: clearer drafts on new clinician handwriting</span>
+          <strong id="metricGoal">70–80%</strong>
+          <span>Improvement target on the same held-out set</span>
         </div>
       </div>
       <ul class="simple-list">
-        <li><strong>Handwriting recognition</strong> — upload a PNG/JPG; get a draft transcription.</li>
-        <li><strong>Prescription pad</strong> — write with mouse or finger; keep original strokes.</li>
+        <li><strong>Handwriting recognition</strong> — upload or try a sample line; edit and save corrections.</li>
+        <li><strong>Prescription pad</strong> — write digitally; recognize the canvas into a typed draft.</li>
         <li><strong>Paper archive</strong> — store a paper prescription image unchanged.</li>
       </ul>
       <p class="muted small" id="checkpointInfo">Loading model info…</p>
@@ -54,9 +54,9 @@
     <section class="panel" id="panel-recognize">
       <h2>Handwriting recognition</h2>
       <p class="lead">
-        Upload a handwriting image to test recognition. Prefer a clear single-line crop.
-        If the service was started with model preload, results usually return in a few seconds.
+        Upload a handwriting image, or tap a sample line below. Prefer a clear single-line crop for best drafts.
       </p>
+      <div class="sample-row" id="sampleRow" aria-label="Quick test samples"></div>
       <div class="grid-2">
         <div>
           <label class="field">Image (PNG / JPG)
@@ -66,8 +66,14 @@
             <input type="checkbox" id="recForceSingle" checked />
             <span>Single-line mode (faster · recommended for cropped lines)</span>
           </label>
+          <label class="field check">
+            <input type="checkbox" id="recAuto" checked />
+            <span>Recognize automatically after choosing an image</span>
+          </label>
           <div class="btn-row">
             <button class="btn btn-primary" id="btnRecognize" type="button">Recognize</button>
+            <button class="btn" id="btnCopyDraft" type="button">Copy draft</button>
+            <button class="btn" id="btnSaveCorrection" type="button">Save correction</button>
           </div>
           <div class="progress hidden" id="recProgress" aria-live="polite">
             <div class="progress-bar"></div>
@@ -80,9 +86,9 @@
             <p>
               <strong>Transcription draft</strong>
               <span class="muted" id="recTime"></span>
-              <span class="draft-badge">Needs clinician review</span>
+              <span class="draft-badge">Editable · needs clinician review</span>
             </p>
-            <textarea id="recText" readonly placeholder="Result appears here…"></textarea>
+            <textarea id="recText" placeholder="Result appears here — edit if needed…"></textarea>
             <p class="muted" id="recNote"></p>
             <details class="meta-details">
               <summary>Technical details</summary>
@@ -97,7 +103,8 @@
     <section class="panel" id="panel-digital">
       <h2>Digital prescription pad</h2>
       <p class="lead">
-        Write with mouse, touchpad, or finger. Original strokes are preserved (not converted to a font).
+        Write with mouse, touchpad, or finger. Original strokes are preserved.
+        Use <strong>Recognize handwriting</strong> on the pad to fill the typed draft from the canvas.
         <a href="/pad/" target="_blank" rel="noopener">Open full pad</a>
       </p>
       <iframe class="pad-frame" title="Digital prescription pad" src="/pad/"></iframe>
@@ -106,7 +113,8 @@
     <section class="panel" id="panel-legacy">
       <h2>Paper prescription archive</h2>
       <p class="lead">
-        Upload an existing paper prescription. The original image is stored unchanged. Recognition is optional and separate.
+        Upload an existing paper prescription. The original image is stored unchanged.
+        You can also run recognition afterward from the Handwriting recognition tab.
       </p>
       <div class="grid-2">
         <div>
@@ -124,6 +132,7 @@
           </label>
           <div class="btn-row">
             <button class="btn btn-primary" id="btnLegacySave" type="button">Save original</button>
+            <button class="btn" id="btnLegacyRecognize" type="button">Recognize this image</button>
           </div>
           <div class="preview-box" id="legPreview"><p class="muted">Preview appears here.</p></div>
         </div>
@@ -137,7 +146,7 @@
       <h2>Saved records</h2>
       <p class="lead">
         Local testing storage on this machine under <code>judge_demo_data/</code> —
-        not the production DISHA database.
+        not the production DISHA database. Includes digital Rx, paper archives, and draft corrections.
       </p>
       <div class="btn-row">
         <button class="btn" id="btnRefreshRecords" type="button">Refresh</button>
