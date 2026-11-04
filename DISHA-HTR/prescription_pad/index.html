@@ -4,140 +4,121 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <meta name="color-scheme" content="light" />
-  <title>DISHA — Digital Prescription Pad (Testing)</title>
+  <title>DISHA — Digital Prescription Pad</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
   <div class="app">
-    <header class="topbar">
-      <div>
-        <p class="eyebrow">DISHA · clinician writing · testing build</p>
-        <h1>Digital prescription pad</h1>
-      </div>
-      <p class="topbar-note">
-        Write prescriptions by hand. Strokes and PNG are preserved — not converted to a font.
-        This is a testing workspace, separate from the patient-facing DISHA app.
-      </p>
+    <header class="page-head">
+      <p class="eyebrow">DISHA · CLINICIAN WRITING · TESTING BUILD</p>
+      <h1>Digital Prescription Pad</h1>
     </header>
 
-    <section class="rx-sheet" aria-label="Prescription sheet">
-      <!-- HEADER -->
-      <div class="rx-header">
-        <div class="logo-box" aria-hidden="true">LOGO</div>
-        <div class="hospital">
-          <h2>Sunrise Community Hospital</h2>
-          <p>Testing campus · Outpatient Department</p>
-          <p>12 Test Road, Example City 560001</p>
-          <p>Contact: +91-00000-00000 · clinic@sunrise.example</p>
+    <section class="org-card rx-header" aria-label="Facility and clinician">
+      <div class="logo-box" aria-hidden="true">LOGO</div>
+      <div class="hospital">
+        <h2>Sunrise Community Hospital</h2>
+      </div>
+      <div class="doctor-block">
+        <label class="field-label" for="doctorSelect">Clinician</label>
+        <select id="doctorSelect"></select>
+        <p id="doctorMeta" class="doctor-meta" hidden></p>
+      </div>
+    </section>
+
+    <section class="patient-card" aria-label="Patient details">
+      <label class="field">Patient name
+        <input id="patientName" type="text" autocomplete="off" />
+      </label>
+      <label class="field">Patient ID
+        <input id="patientId" type="text" autocomplete="off" />
+      </label>
+      <label class="field">Age
+        <input id="patientAge" type="text" inputmode="numeric" autocomplete="off" />
+      </label>
+      <label class="field">Visit date
+        <input id="visitDate" type="date" />
+      </label>
+    </section>
+
+    <section class="toolbar-card" role="toolbar" aria-label="Writing tools">
+      <label class="tool">Colour
+        <input id="penColor" type="color" value="#1e293b" />
+      </label>
+      <label class="tool tool-thickness">Thickness
+        <input id="penWidth" type="range" min="1" max="12" value="3" />
+        <span id="penWidthLabel">3</span>
+      </label>
+      <span class="tool-sep" aria-hidden="true"></span>
+      <button type="button" id="btnUndo" class="btn">Undo</button>
+      <button type="button" id="btnClear" class="btn btn-warn">Clear</button>
+      <span class="tool-sep" aria-hidden="true"></span>
+      <button type="button" id="btnRecognizePad" class="btn">Recognize handwriting</button>
+      <button type="button" id="btnSave" class="btn btn-primary">Save prescription</button>
+      <span class="tool-sep grow" aria-hidden="true"></span>
+      <button type="button" id="btnExportPng" class="btn">Export PNG</button>
+      <button type="button" id="btnExportJson" class="btn">Export strokes JSON</button>
+    </section>
+    <p class="pad-rec-status" id="padRecStatus" aria-live="polite"></p>
+
+    <section class="workspace" aria-label="Writing workspace">
+      <div class="canvas-panel">
+        <div class="canvas-wrap" id="canvasWrap">
+          <canvas id="rxCanvas" width="1000" height="560" aria-label="Handwriting prescription canvas"></canvas>
         </div>
-        <div class="doctor-block">
-          <label>
-            Clinician
-            <select id="doctorSelect"></select>
-          </label>
-          <p id="doctorMeta" class="doctor-meta"></p>
-        </div>
       </div>
 
-      <!-- PATIENT / FOOTER fields shown above canvas for mobile usability; also mirrored in print footer -->
-      <div class="patient-row">
-        <label>Patient name
-          <input id="patientName" type="text" autocomplete="off" />
-        </label>
-        <label>Patient ID
-          <input id="patientId" type="text" autocomplete="off" />
-        </label>
-        <label>Age
-          <input id="patientAge" type="text" inputmode="numeric" autocomplete="off" />
-        </label>
-        <label>Visit date
-          <input id="visitDate" type="date" />
-        </label>
-      </div>
-
-      <!-- MIDDLE: canvas + toolbar -->
-      <div class="toolbar" role="toolbar" aria-label="Writing tools">
-        <label class="tool">Colour
-          <input id="penColor" type="color" value="#1a1a1a" />
-        </label>
-        <label class="tool">Thickness
-          <input id="penWidth" type="range" min="1" max="12" value="3" />
-          <span id="penWidthLabel">3</span>
-        </label>
-        <button type="button" id="btnUndo" class="btn">Undo</button>
-        <button type="button" id="btnClear" class="btn btn-warn">Clear</button>
-        <button type="button" id="btnRecognizePad" class="btn">Recognize handwriting</button>
-        <button type="button" id="btnSave" class="btn btn-primary">Save prescription</button>
-        <button type="button" id="btnExportPng" class="btn">Export PNG</button>
-        <button type="button" id="btnExportJson" class="btn">Export strokes JSON</button>
-      </div>
-      <p class="pad-rec-status muted" id="padRecStatus" aria-live="polite"></p>
-
-      <div class="canvas-wrap" id="canvasWrap">
-        <canvas id="rxCanvas" width="1000" height="560" aria-label="Handwriting prescription canvas"></canvas>
-        <p class="canvas-hint">Write with mouse, touchpad, or finger. Scroll locked while drawing. Handwriting is the primary record — not a font.</p>
-      </div>
-
-      <!-- Structured draft fields: NEVER rewrite the canvas/strokes -->
-      <div class="clinical-draft" aria-label="Optional clinical draft fields">
-        <h3>Optional typed draft <span class="draft-tag">AI/human draft only — does not alter handwriting</span></h3>
-        <div class="draft-grid">
-          <label>Diagnosis (draft)
+      <aside class="side-panel">
+        <div class="draft-card" aria-label="Optional typed draft">
+          <div class="draft-head">
+            <h3>Optional typed draft</h3>
+            <span class="draft-badge">Human draft only.</span>
+          </div>
+          <label class="field">Diagnosis (draft)
             <input id="draftDiagnosis" type="text" autocomplete="off" placeholder="Testing draft only" />
           </label>
-          <label>Medicine names (draft)
+          <label class="field">Medication name (draft)
             <input id="draftMedicines" type="text" autocomplete="off" placeholder="e.g. Paracetamol" />
           </label>
-          <label>Dosage (draft)
-            <input id="draftDosage" type="text" autocomplete="off" placeholder="e.g. 500 mg" />
-          </label>
-          <label>Frequency (draft)
+          <label class="field">Frequency (draft)
             <input id="draftFrequency" type="text" autocomplete="off" placeholder="e.g. 1-0-1" />
           </label>
-          <label>Duration (draft)
+          <label class="field">Duration (draft)
             <input id="draftDuration" type="text" autocomplete="off" placeholder="e.g. 5 days" />
           </label>
-          <label>Instructions (draft)
-            <input id="draftInstructions" type="text" autocomplete="off" placeholder="e.g. after food" />
+          <!-- Kept for existing save/reopen JS; not shown in mockup -->
+          <input id="draftDosage" type="hidden" value="" />
+          <input id="draftInstructions" type="hidden" value="" />
+          <label class="field field-area">Original transcription draft
+            <textarea id="draftTranscription" rows="4" placeholder="Typed (draft) of the handwriting..."></textarea>
           </label>
         </div>
-        <label class="draft-transcribe">Optional transcription draft
-          <textarea id="draftTranscription" rows="2" placeholder="Typed/AI draft of the handwriting — review required; not auto-approved"></textarea>
-        </label>
-        <p class="draft-note">Medication names, dosage, frequency and duration must be reviewed by an authorized clinician. Synthetic testing data only.</p>
-      </div>
 
-      <footer class="rx-footer">
-        <div>
-          <strong>Patient:</strong> <span id="footerPatient">—</span>
-          · <strong>ID:</strong> <span id="footerId">—</span>
-          · <strong>Age:</strong> <span id="footerAge">—</span>
-          · <strong>Date:</strong> <span id="footerDate">—</span>
+        <div class="saved-card" aria-label="Saved local testing records">
+          <div class="saved-head">
+            <h3>Saved local testing records</h3>
+            <button type="button" id="btnRefreshSaved" class="btn btn-sm">Refresh</button>
+          </div>
+          <div id="savedList" class="saved-list"></div>
+          <div id="preview" class="preview hidden">
+            <h4>Preview</h4>
+            <img id="previewImg" alt="Saved prescription preview" />
+            <pre id="previewMeta"></pre>
+          </div>
         </div>
-        <p class="footer-disclaimer">
-          Testing workspace only. Digital prescriptions store original strokes and rendered PNG.
-          Paper archive uploads keep the original image unchanged.
-        </p>
-      </footer>
+      </aside>
     </section>
 
-    <section class="saved-panel" aria-label="Saved local testing records">
-      <div class="saved-head">
-        <h2>Saved local testing records</h2>
-        <button type="button" id="btnRefreshSaved" class="btn">Refresh</button>
-      </div>
-      <p class="saved-note">
-        Records stay in this browser’s localStorage, optional local disk API, and file downloads.
-        Reopen restores original strokes when stroke JSON is present. Saves are append-only.
-        They are <strong>not</strong> written to the production DISHA database.
-      </p>
-      <div id="savedList" class="saved-list"></div>
-      <div id="preview" class="preview hidden">
-        <h3>Preview</h3>
-        <img id="previewImg" alt="Saved prescription preview" />
-        <pre id="previewMeta"></pre>
-      </div>
-    </section>
+    <!-- Footer sync targets used by app.js -->
+    <div class="sr-only" aria-hidden="true">
+      <span id="footerPatient">—</span>
+      <span id="footerId">—</span>
+      <span id="footerAge">—</span>
+      <span id="footerDate">—</span>
+    </div>
   </div>
 
   <script src="app.js"></script>

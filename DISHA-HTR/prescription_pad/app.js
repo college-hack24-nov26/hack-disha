@@ -34,7 +34,7 @@
   ];
 
   const TEST_PATIENTS = [
-    { name: "Test Patient One", id: "TEST-P-001", age: "34" },
+    { name: "Test Patient One", id: "TEST-P-001", age: "14" },
     { name: "Test Patient Two", id: "TEST-P-002", age: "58" },
   ];
 
@@ -552,20 +552,18 @@
       row.className = "saved-item";
       const left = document.createElement("div");
       left.innerHTML =
-        `<strong>${escapeHtml(rec.doctorName)}</strong> · ${escapeHtml(rec.patientName)} (${escapeHtml(rec.patientId)})<br/>` +
-        `<span style="color:#57534e;font-size:0.82rem">${escapeHtml(rec.createdAt)} · ${rec.strokeCount} strokes` +
-        `${rec.versionOf ? " · version of " + escapeHtml(rec.versionOf) : ""} · testing</span>`;
+        `<strong>${escapeHtml(rec.doctorName)}</strong>` +
+        `<span class="saved-sub">${escapeHtml(rec.patientName)} · ${escapeHtml(rec.patientId)}</span>`;
       const actions = document.createElement("div");
-      actions.style.display = "flex";
-      actions.style.gap = "0.4rem";
+      actions.className = "saved-actions";
       const btnPreview = document.createElement("button");
       btnPreview.type = "button";
-      btnPreview.className = "btn";
+      btnPreview.className = "btn btn-sm";
       btnPreview.textContent = "Preview";
       btnPreview.addEventListener("click", () => showPreview(rec));
       const btnReopen = document.createElement("button");
       btnReopen.type = "button";
-      btnReopen.className = "btn btn-primary";
+      btnReopen.className = "btn btn-primary btn-sm";
       btnReopen.textContent = "Reopen";
       btnReopen.addEventListener("click", () => reopenRecord(rec));
       actions.appendChild(btnPreview);

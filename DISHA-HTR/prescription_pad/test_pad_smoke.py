@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import re
 import unittest
 from pathlib import Path
 
@@ -17,8 +16,8 @@ class TestPrescriptionPadSmoke(unittest.TestCase):
     def test_html_has_sections_and_canvas(self) -> None:
         html = (ROOT / "index.html").read_text(encoding="utf-8")
         self.assertIn('id="rxCanvas"', html)
-        self.assertIn("HEADER", html.upper() or "rx-header")
         self.assertIn("rx-header", html)
+        self.assertIn("Digital Prescription Pad", html)
         self.assertIn("patientName", html)
         self.assertIn("btnUndo", html)
         self.assertIn("btnClear", html)
@@ -27,9 +26,13 @@ class TestPrescriptionPadSmoke(unittest.TestCase):
         self.assertIn("Recognize handwriting", html)
         self.assertIn("draftDiagnosis", html)
         self.assertIn("draftTranscription", html)
-        self.assertIn("does not alter handwriting", html)
+        self.assertIn("Human draft only", html)
         self.assertIn("testing", html.lower())
-        self.assertIn("patient-facing DISHA", html)
+        self.assertIn("Sunrise Community Hospital", html)
+        self.assertIn("org-card", html)
+        self.assertIn("toolbar-card", html)
+        self.assertIn("saved-card", html)
+        self.assertIn("workspace", html)
         self.assertNotIn("trocr", html.lower())
 
     def test_js_pointer_events_and_exports(self) -> None:
@@ -64,6 +67,7 @@ class TestPrescriptionPadSmoke(unittest.TestCase):
         self.assertIn("touch-action: none", css)
         self.assertIn("@media", css)
         self.assertIn("drawing-lock", css)
+        self.assertIn(".workspace", css)
 
     def test_no_trocr_pipeline_imports(self) -> None:
         product = ("index.html", "styles.css", "app.js", "README.md")
