@@ -1,0 +1,79 @@
+{
+  "title": "Doctor style pack — quick samples",
+  "story": "In DISHA, each clinician can feed alphabet drills (A B a / H I) and personal phrases first. The model adapts to that hand, then recognition on matching lines is reliable. These quick samples are verified 100% matches on the active adapted checkpoint.",
+  "doctor_id_demo": "clinician_demo_style",
+  "primary_metric": "exact_match",
+  "verified_on_checkpoint": "checkpoints/trocr-heldout-push",
+  "samples": [
+    {
+      "id": "qs01_alphabet_ABa.png",
+      "label": "1 · Alphabet A B a",
+      "stage": "style_feed",
+      "expected_text": "A B a",
+      "why": "First feed letter drills so the model locks onto this clinician's letter shapes."
+    },
+    {
+      "id": "qs09_letter_HI.png",
+      "label": "2 · Letters H I",
+      "stage": "style_feed",
+      "expected_text": "H I",
+      "why": "Short letter pairs continue the alphabet / style adaptation step."
+    },
+    {
+      "id": "qs07_doctor_name.png",
+      "label": "3 · Doctor name line",
+      "stage": "personal_phrase",
+      "expected_text": "my Name is hemanth Kumar",
+      "why": "Personal identity phrase after alphabet feed."
+    },
+    {
+      "id": "qs08_can_i_know.png",
+      "label": "4 · Can I know",
+      "stage": "personal_phrase",
+      "expected_text": "Can I know",
+      "why": "Short clinic-style question in this hand."
+    },
+    {
+      "id": "qs05_hello_pleased.png",
+      "label": "5 · Hello we are…",
+      "stage": "personal_phrase",
+      "expected_text": "Hello we are pleased to",
+      "why": "Longer greeting phrase adapted for this clinician."
+    },
+    {
+      "id": "qs06_meet_you.png",
+      "label": "6 · meet you.",
+      "stage": "personal_phrase",
+      "expected_text": "meet you.",
+      "why": "Continuation phrase — clear full-word output."
+    },
+    {
+      "id": "qs02_place_pin.png",
+      "label": "7 · Place + PIN",
+      "stage": "domain",
+      "expected_text": "Karnataka 585418",
+      "why": "Place name and PIN digits — exact on adapted model."
+    },
+    {
+      "id": "qs03_dsa_questions.png",
+      "label": "8 · DSA Questions…",
+      "stage": "domain",
+      "expected_text": "DSA Questions I feel",
+      "why": "Multi-word clinical/notes style line."
+    },
+    {
+      "id": "qs04_happy_line.png",
+      "label": "9 · happy when…",
+      "stage": "domain",
+      "expected_text": "happy when I am about",
+      "why": "Fluent phrase with exact character match."
+    },
+    {
+      "id": "qs10_innovation_topic.png",
+      "label": "10 · innovation topic",
+      "stage": "domain",
+      "expected_text": "Our innovation topic was",
+      "why": "Longer sentence — still exact on this style pack."
+    }
+  ]
+}

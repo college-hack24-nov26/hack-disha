@@ -75,6 +75,8 @@ training/**/*.zip
 demo/results/
 demo/_inspect/
 demo/_probe/
+demo/approved/archive_old/
+demo/approved/_verify.json
 # Fine-tuned demo weights already covered by *.safetensors; keep meta trackable if desired
 
 # Doctor personalization data (samples, adapters, audits) — keep local only

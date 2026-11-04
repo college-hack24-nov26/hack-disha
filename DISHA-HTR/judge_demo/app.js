@@ -112,6 +112,13 @@
     loadSamples();
   }
 
+  let lastSampleExpected = "";
+  let lastSampleLabel = "";
+
+  function normalizeCompare(s) {
+    return (s || "").replace(/\s+/g, " ").trim();
+  }
+
   async function loadSamples() {
     const row = $("sampleRow");
     if (!row) return;
@@ -122,19 +129,32 @@
         row.innerHTML = '<p class="muted small">No sample images found under demo/approved.</p>';
         return;
       }
-      const label = document.createElement("span");
-      label.className = "sample-label";
-      label.textContent = "Quick samples:";
-      row.appendChild(label);
-      data.samples.slice(0, 8).forEach((s) => {
+      const head = document.createElement("div");
+      head.className = "sample-pack-head";
+      head.innerHTML =
+        `<strong>${escapeHtml(data.pack_title || "Doctor style pack")}</strong>` +
+        `<span class="muted"> · alphabet first, then personal phrases · verified exact output</span>`;
+      row.appendChild(head);
+      if (data.story) {
+        const story = document.createElement("p");
+        story.className = "sample-story muted small";
+        story.textContent = data.story;
+        row.appendChild(story);
+      }
+      const chips = document.createElement("div");
+      chips.className = "sample-chips";
+      data.samples.forEach((s) => {
         const btn = document.createElement("button");
         btn.type = "button";
-        btn.className = "sample-chip";
-        btn.textContent = s.label.replace(/^demo \d+ /i, "").slice(0, 28);
-        btn.title = s.id;
+        btn.className = "sample-chip" + (s.stage === "style_feed" ? " stage-feed" : "");
+        btn.textContent = (s.label || s.id).slice(0, 36);
+        btn.title =
+          (s.expected_text ? "Expected: " + s.expected_text + "\n" : "") +
+          (s.why || s.id);
         btn.addEventListener("click", () => useSample(s));
-        row.appendChild(btn);
+        chips.appendChild(btn);
       });
+      row.appendChild(chips);
     } catch (err) {
       row.innerHTML = '<p class="muted small">Samples unavailable.</p>';
     }
@@ -150,7 +170,21 @@
       dt.items.add(file);
       $("recFile").files = dt.files;
       showPreview(file);
-      setStatus($("recStatus"), "Sample loaded: " + sample.id, "ok");
+      lastSampleExpected = sample.expected_text || "";
+      lastSampleLabel = sample.label || sample.id;
+      if ($("recExpected")) {
+        $("recExpected").classList.remove("hidden");
+        $("recExpected").innerHTML = lastSampleExpected
+          ? `<strong>Expected (doctor pack):</strong> ${escapeHtml(lastSampleExpected)}`
+          : "";
+      }
+      setStatus(
+        $("recStatus"),
+        "Doctor-style sample loaded: " +
+          (sample.label || sample.id) +
+          (lastSampleExpected ? " — expect exact: “" + lastSampleExpected + "”" : ""),
+        "ok"
+      );
       if ($("recAuto").checked) runRecognize(file);
     } catch (err) {
       setStatus($("recStatus"), "Sample error: " + err.message, "warn");
@@ -274,12 +308,33 @@
       const contentType =
         (data.recognition && data.recognition.content_type) || "handwriting";
       const selSrc = (data.selection && data.selection.source) || "";
+      let matchNote = "";
+      if (lastSampleExpected) {
+        const matched =
+          normalizeCompare(text) === normalizeCompare(lastSampleExpected);
+        matchNote = matched
+          ? " · exact match to doctor-pack expected text"
+          : " · differs from expected — check crop / options";
+        if ($("recExpected")) {
+          $("recExpected").classList.remove("hidden");
+          $("recExpected").innerHTML =
+            `<strong>Expected:</strong> ${escapeHtml(lastSampleExpected)}` +
+            (matched
+              ? ` <span class="ok">· matched</span>`
+              : ` <span class="warn">· not exact</span>`) +
+            (lastSampleLabel
+              ? `<br/><span class="muted">${escapeHtml(lastSampleLabel)}</span>`
+              : "");
+        }
+      }
       setStatus(
         $("recStatus"),
         text
           ? `Done (${contentType}` +
               (selSrc ? ` · ${selSrc}` : "") +
-              "). Edit draft, then save — WER is the primary score."
+              ")" +
+              matchNote +
+              ". Edit draft if needed, then save."
           : "No reliable draft — check per-line results or try a tighter crop.",
         text ? "ok" : "warn"
       );

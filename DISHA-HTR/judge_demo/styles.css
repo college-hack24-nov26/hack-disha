@@ -649,6 +649,46 @@ html, body {
   .hero h1 { max-width: none; }
 }
 
+.sample-row {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+  margin-bottom: 0.75rem;
+}
+
+.sample-pack-head {
+  font-size: 0.86rem;
+}
+
+.sample-story {
+  margin: 0;
+  max-width: 52rem;
+  line-height: 1.45;
+}
+
+.sample-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.sample-chip.stage-feed {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+  color: var(--accent-deep);
+}
+
+.expected-line {
+  margin: 0 0 0.65rem;
+  padding: 0.45rem 0.65rem;
+  border-radius: 8px;
+  background: #fff;
+  border: 1px solid var(--line);
+}
+
+.expected-line .ok { color: #047857; font-weight: 700; }
+.expected-line .warn { color: var(--warn); font-weight: 700; }
+
 /* Tightened workspace — recognition-first, less chrome */
 .shell {
   max-width: 1040px;

@@ -685,17 +685,55 @@ class Handler(BaseHTTPRequestHandler):
         self._send(404, b"missing", "text/plain")
 
     def _list_samples(self) -> None:
+        """Curated doctor-style pack first (manifest); fallback to raw PNGs."""
         items = []
-        if SAMPLES_DIR.is_dir():
+        story = ""
+        doctor_id = ""
+        manifest_path = SAMPLES_DIR / "samples_manifest.json"
+        if manifest_path.is_file():
+            try:
+                manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+                story = str(manifest.get("story") or "")
+                doctor_id = str(manifest.get("doctor_id_demo") or "")
+                for row in manifest.get("samples") or []:
+                    name = str(row.get("id") or "").strip()
+                    if not name or not (SAMPLES_DIR / name).is_file():
+                        continue
+                    items.append(
+                        {
+                            "id": name,
+                            "label": str(row.get("label") or name),
+                            "expected_text": str(row.get("expected_text") or ""),
+                            "stage": str(row.get("stage") or ""),
+                            "why": str(row.get("why") or ""),
+                            "url": "/api/samples/" + name,
+                            "verified_exact": True,
+                        }
+                    )
+            except (OSError, ValueError, TypeError, json.JSONDecodeError):
+                items = []
+        if not items and SAMPLES_DIR.is_dir():
             for p in sorted(SAMPLES_DIR.glob("*.png"))[:24]:
                 items.append(
                     {
                         "id": p.name,
                         "label": p.stem.replace("_", " "),
+                        "expected_text": "",
+                        "stage": "",
+                        "why": "",
                         "url": "/api/samples/" + p.name,
+                        "verified_exact": False,
                     }
                 )
-        status, body, ctype = json_bytes({"count": len(items), "samples": items})
+        status, body, ctype = json_bytes(
+            {
+                "count": len(items),
+                "samples": items,
+                "story": story,
+                "doctor_id_demo": doctor_id,
+                "pack_title": "Doctor style pack",
+            }
+        )
         self._send(status, body, ctype)
 
     def _sample_file(self, name: str) -> None:
