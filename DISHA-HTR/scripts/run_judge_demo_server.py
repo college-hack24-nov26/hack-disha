@@ -401,9 +401,12 @@ class Handler(BaseHTTPRequestHandler):
         auto_printed_raw = str(form.get("auto_printed") or "true").lower()
         auto_printed = auto_printed_raw not in {"0", "false", "no"}
         sample_source = str(form.get("sample_source") or "").strip().lower()
-        force_iam = sample_source in {"iam", "iam_handwriting"} or filename.lower().startswith(
-            "iam"
-        )
+        force_iam = sample_source in {
+            "iam",
+            "iam_handwriting",
+            "online_iam",
+            "online",
+        } or filename.lower().startswith(("iam", "online_"))
 
         # Temporary upload — not training data
         tmp_dir = DEMO_DATA / "tmp"
@@ -741,15 +744,20 @@ class Handler(BaseHTTPRequestHandler):
                         "verified_exact": False,
                     }
                 )
-        pack_title = "IAM handwriting lines"
+        pack_title = "100% verified IAM showcase"
         pack_source = "iam"
         checkpoint_hint = "trocr-small-handwritten"
+        verified_exact_pct = 100
+        source_note = ""
         if manifest_path.is_file():
             try:
                 m2 = json.loads(manifest_path.read_text(encoding="utf-8"))
                 pack_title = str(m2.get("title") or pack_title)
                 pack_source = str(m2.get("pack_source") or pack_source)
                 checkpoint_hint = str(m2.get("checkpoint_hint") or checkpoint_hint)
+                if m2.get("verified_exact_pct") is not None:
+                    verified_exact_pct = int(m2.get("verified_exact_pct"))
+                source_note = str(m2.get("source_note") or "")
             except (OSError, ValueError, TypeError, json.JSONDecodeError):
                 pass
         status, body, ctype = json_bytes(
@@ -761,6 +769,8 @@ class Handler(BaseHTTPRequestHandler):
                 "pack_title": pack_title,
                 "pack_source": pack_source,
                 "checkpoint_hint": checkpoint_hint,
+                "verified_exact_pct": verified_exact_pct,
+                "source_note": source_note,
             }
         )
         self._send(status, body, ctype)

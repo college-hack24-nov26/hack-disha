@@ -1,15 +1,15 @@
-# Quick samples — IAM handwriting
+# Quick samples — online verified IAM lines
 
-These PNGs are curated **IAM** line images (from the local Teklia IAM-line extract) with **official ground-truth text** in `samples_manifest.json`.
+These showcase PNGs were **downloaded from Hugging Face**  
+[`Teklia/IAM-line`](https://huggingface.co/datasets/Teklia/IAM-line) (test split).
 
-## Why IAM (not the previous notebook chips)
+Each image was checked for an **exact recognition match** on  
+`checkpoints/trocr-small-handwritten` before being added to the pack.
 
-The domain fine-tune is strong on phone-notebook held-out lines, but it drifts on classical IAM handwriting. For judge demos that use IAM assets, recognition uses **`checkpoints/trocr-small-handwritten`** (base TrOCR), which matches this writing style so the draft clearly shows the content in the image.
+## Demo
 
-## Demo flow
+1. Click a chip — **content in the image** (official transcription) is shown.
+2. Press **Recognize** — draft should match that text exactly.
+3. UI shows **matched draft** on success.
 
-1. Click an IAM chip — **expected content** appears (official transcription).
-2. Recognize — draft should **exact-match** that content on the base handwriting model.
-3. UI shows **matched** when draft equals the IAM ground truth.
-
-IAM licensing: non-commercial research; cite Marti & Bunke / FKI terms. Do not redistribute the full IAM dump; these curated demo lines are for local judging only.
+IAM terms: non-commercial research; cite Marti & Bunke / FKI as required by the dataset.

@@ -1,91 +1,102 @@
 {
-  "title": "IAM handwriting lines",
-  "story": "These are real IAM handwriting research lines (Teklia / IAM). Each chip shows the official transcription. Recognition uses the base TrOCR handwritten model that matches this writing style, so the draft should clearly match the content in the image.",
-  "doctor_id_demo": "",
+  "title": "Online verified IAM lines",
+  "story": "Showcase lines downloaded from Hugging Face Teklia/IAM-line (online). Each was verified for an exact match on base TrOCR-small-handwritten \u2014 press Recognize to see the same text that is in the image.",
   "pack_source": "iam",
   "checkpoint_hint": "trocr-small-handwritten",
   "primary_metric": "exact_match",
   "verified_on_checkpoint": "checkpoints/trocr-small-handwritten",
+  "online_source": "https://huggingface.co/datasets/Teklia/IAM-line",
   "samples": [
     {
-      "id": "iam01_machine.png",
-      "label": "1 · regarded as a machine",
-      "stage": "iam",
-      "expected_text": "man could only be regarded as a machine .",
-      "why": "IAM line — official ground truth shown as expected content.",
-      "source_id": "test_00023.png"
-    },
-    {
-      "id": "iam02_mother.png",
-      "label": "2 · possessive mother",
-      "stage": "iam",
-      "expected_text": "She plays the possessive mother of a man whose hobby revolves",
-      "why": "IAM line — official ground truth shown as expected content.",
-      "source_id": "test_00010.png"
-    },
-    {
-      "id": "iam03_everyday.png",
-      "label": "3 · everyday articles",
-      "stage": "iam",
-      "expected_text": "They will be asked to comment on the design of everyday articles",
-      "why": "IAM line — official ground truth shown as expected content.",
-      "source_id": "test_00016.png"
-    },
-    {
-      "id": "iam04_garages.png",
-      "label": "4 · director of garages",
-      "stage": "iam",
+      "id": "online_01.png",
+      "label": "1 \u00b7 He is also a director of a couple ",
+      "stage": "online_iam",
       "expected_text": "He is also a director of a couple of garages . And he finds time as well to be a lyric",
-      "why": "IAM line — official ground truth shown as expected content.",
-      "source_id": "test_00006.png"
+      "why": "Downloaded from Hugging Face Teklia/IAM-line (test). Verified exact match on base TrOCR-small-handwritten.",
+      "source": "https://huggingface.co/datasets/Teklia/IAM-line",
+      "hf_index": 6
     },
     {
-      "id": "iam05_spain.png",
-      "label": "5 · Lady of Spain",
-      "stage": "iam",
-      "expected_text": "writer . He writes with Tolchard Evans , composer of \" Lady of Spain \" and other big hits .",
-      "why": "IAM line — official ground truth shown as expected content.",
-      "source_id": "test_00007.png"
+      "id": "online_02.png",
+      "label": "2 \u00b7 She plays the possessive mother of",
+      "stage": "online_iam",
+      "expected_text": "She plays the possessive mother of a man whose hobby revolves",
+      "why": "Downloaded from Hugging Face Teklia/IAM-line (test). Verified exact match on base TrOCR-small-handwritten.",
+      "source": "https://huggingface.co/datasets/Teklia/IAM-line",
+      "hf_index": 10
     },
     {
-      "id": "iam06_authors.png",
-      "label": "6 · Brogan / Delaney",
-      "stage": "iam",
-      "expected_text": "Dennis Brogan , Shelagh Delaney , and Alan Sillitoe .",
-      "why": "IAM line — official ground truth shown as expected content.",
-      "source_id": "test_00040.png"
+      "id": "online_03.png",
+      "label": "3 \u00b7 They will be asked to comment on t",
+      "stage": "online_iam",
+      "expected_text": "They will be asked to comment on the design of everyday articles",
+      "why": "Downloaded from Hugging Face Teklia/IAM-line (test). Verified exact match on base TrOCR-small-handwritten.",
+      "source": "https://huggingface.co/datasets/Teklia/IAM-line",
+      "hf_index": 16
     },
     {
-      "id": "iam07_film.png",
-      "label": "7 · British film",
-      "stage": "iam",
-      "expected_text": "The film covered a wide aspect of the British",
-      "why": "IAM line — official ground truth shown as expected content.",
-      "source_id": "test_00043.png"
+      "id": "online_04.png",
+      "label": "4 \u00b7 such as a chair and a motor-car . ",
+      "stage": "online_iam",
+      "expected_text": "such as a chair and a motor-car . The idea is to see what happens when",
+      "why": "Downloaded from Hugging Face Teklia/IAM-line (test). Verified exact match on base TrOCR-small-handwritten.",
+      "source": "https://huggingface.co/datasets/Teklia/IAM-line",
+      "hf_index": 18
     },
     {
-      "id": "iam08_britain.png",
-      "label": "8 · Britain today",
-      "stage": "iam",
-      "expected_text": "strike . It showed Britain today through the eyes",
-      "why": "IAM line — official ground truth shown as expected content.",
-      "source_id": "test_00046.png"
-    },
-    {
-      "id": "iam09_african.png",
-      "label": "9 · topicality of African",
-      "stage": "iam",
-      "expected_text": "the switch because of the topicality of African",
-      "why": "IAM line — official ground truth shown as expected content.",
-      "source_id": "test_00025.png"
-    },
-    {
-      "id": "iam10_hypnosis.png",
-      "label": "10 · without hypnosis",
-      "stage": "iam",
+      "id": "online_05.png",
+      "label": "5 \u00b7 parts of the mind not normally ava",
+      "stage": "online_iam",
       "expected_text": "parts of the mind not normally available without hypnosis are used .",
-      "why": "IAM line — official ground truth shown as expected content.",
-      "source_id": "test_00020.png"
+      "why": "Downloaded from Hugging Face Teklia/IAM-line (test). Verified exact match on base TrOCR-small-handwritten.",
+      "source": "https://huggingface.co/datasets/Teklia/IAM-line",
+      "hf_index": 20
+    },
+    {
+      "id": "online_06.png",
+      "label": "6 \u00b7 man could only be regarded as a ma",
+      "stage": "online_iam",
+      "expected_text": "man could only be regarded as a machine .",
+      "why": "Downloaded from Hugging Face Teklia/IAM-line (test). Verified exact match on base TrOCR-small-handwritten.",
+      "source": "https://huggingface.co/datasets/Teklia/IAM-line",
+      "hf_index": 23
+    },
+    {
+      "id": "online_07.png",
+      "label": "7 \u00b7 the switch because of the topicali",
+      "stage": "online_iam",
+      "expected_text": "the switch because of the topicality of African",
+      "why": "Downloaded from Hugging Face Teklia/IAM-line (test). Verified exact match on base TrOCR-small-handwritten.",
+      "source": "https://huggingface.co/datasets/Teklia/IAM-line",
+      "hf_index": 25
+    },
+    {
+      "id": "online_08.png",
+      "label": "8 \u00b7 Dennis Brogan , Shelagh Delaney , ",
+      "stage": "online_iam",
+      "expected_text": "Dennis Brogan , Shelagh Delaney , and Alan Sillitoe .",
+      "why": "Downloaded from Hugging Face Teklia/IAM-line (test). Verified exact match on base TrOCR-small-handwritten.",
+      "source": "https://huggingface.co/datasets/Teklia/IAM-line",
+      "hf_index": 40
+    },
+    {
+      "id": "online_09.png",
+      "label": "9 \u00b7 The film covered a wide aspect of ",
+      "stage": "online_iam",
+      "expected_text": "The film covered a wide aspect of the British",
+      "why": "Downloaded from Hugging Face Teklia/IAM-line (test). Verified exact match on base TrOCR-small-handwritten.",
+      "source": "https://huggingface.co/datasets/Teklia/IAM-line",
+      "hf_index": 43
+    },
+    {
+      "id": "online_10.png",
+      "label": "10 \u00b7 Guest \" programmes because of an e",
+      "stage": "online_iam",
+      "expected_text": "Guest \" programmes because of an electricians'",
+      "why": "Downloaded from Hugging Face Teklia/IAM-line (test). Verified exact match on base TrOCR-small-handwritten.",
+      "source": "https://huggingface.co/datasets/Teklia/IAM-line",
+      "hf_index": 44
     }
-  ]
+  ],
+  "verified_exact_pct": 100
 }

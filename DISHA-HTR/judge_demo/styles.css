@@ -672,6 +672,73 @@ html, body {
   gap: 0.4rem;
 }
 
+.badge-verified {
+  display: inline-block;
+  margin-left: 0.45rem;
+  padding: 0.15rem 0.5rem;
+  border-radius: 999px;
+  background: var(--accent-soft);
+  color: var(--accent-deep);
+  font-size: 0.72rem;
+  font-weight: 800;
+}
+
+.sample-showcase {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 0.65rem;
+}
+
+.sample-card {
+  display: grid;
+  gap: 0.4rem;
+  text-align: left;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: #fff;
+  padding: 0.45rem;
+  cursor: pointer;
+  font: inherit;
+  transition: border-color 0.15s ease, transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.sample-card:hover {
+  border-color: var(--accent);
+  transform: translateY(-1px);
+  box-shadow: 0 6px 16px rgba(20, 32, 28, 0.08);
+}
+
+.sample-card img {
+  width: 100%;
+  height: 64px;
+  object-fit: contain;
+  background: #f4f7f5;
+  border-radius: 8px;
+}
+
+.sample-card-meta {
+  display: grid;
+  gap: 0.15rem;
+}
+
+.sample-card-label {
+  font-size: 0.78rem;
+  font-weight: 800;
+  color: var(--accent-deep);
+}
+
+.sample-card-text {
+  font-size: 0.74rem;
+  line-height: 1.35;
+  color: var(--ink);
+}
+
+.sample-card-tag {
+  font-size: 0.68rem;
+  font-weight: 700;
+  color: #047857;
+}
+
 .sample-chip.stage-feed {
   border-color: var(--accent);
   background: var(--accent-soft);

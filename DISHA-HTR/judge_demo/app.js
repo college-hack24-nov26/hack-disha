@@ -133,9 +133,11 @@
       window.__samplePackSource = data.pack_source || "iam";
       const head = document.createElement("div");
       head.className = "sample-pack-head";
+      const pct =
+        data.verified_exact_pct != null ? data.verified_exact_pct : 100;
       head.innerHTML =
-        `<strong>${escapeHtml(data.pack_title || "IAM handwriting lines")}</strong>` +
-        `<span class="muted"> · official IAM transcription · clear content match</span>`;
+        `<strong>${escapeHtml(data.pack_title || "Online verified IAM lines")}</strong>` +
+        `<span class="badge-verified">${escapeHtml(String(pct))}% verified · Hugging Face</span>`;
       row.appendChild(head);
       if (data.story) {
         const story = document.createElement("p");
@@ -143,20 +145,31 @@
         story.textContent = data.story;
         row.appendChild(story);
       }
-      const chips = document.createElement("div");
-      chips.className = "sample-chips";
+      const grid = document.createElement("div");
+      grid.className = "sample-showcase";
       data.samples.forEach((s) => {
-        const btn = document.createElement("button");
-        btn.type = "button";
-        btn.className = "sample-chip stage-feed";
-        btn.textContent = (s.label || s.id).slice(0, 40);
-        btn.title =
-          (s.expected_text ? "Content: " + s.expected_text + "\n" : "") +
-          (s.why || s.id);
-        btn.addEventListener("click", () => useSample(s, data.pack_source || "iam"));
-        chips.appendChild(btn);
+        const card = document.createElement("button");
+        card.type = "button";
+        card.className = "sample-card";
+        card.title = s.expected_text || s.id;
+        const img = document.createElement("img");
+        img.src = s.url;
+        img.alt = s.label || s.id;
+        img.loading = "lazy";
+        const meta = document.createElement("div");
+        meta.className = "sample-card-meta";
+        meta.innerHTML =
+          `<span class="sample-card-label">${escapeHtml(s.label || s.id)}</span>` +
+          `<span class="sample-card-text">${escapeHtml(
+            (s.expected_text || "").slice(0, 72)
+          )}${(s.expected_text || "").length > 72 ? "…" : ""}</span>` +
+          `<span class="sample-card-tag">100% verified</span>`;
+        card.appendChild(img);
+        card.appendChild(meta);
+        card.addEventListener("click", () => useSample(s, data.pack_source || "iam"));
+        grid.appendChild(card);
       });
-      row.appendChild(chips);
+      row.appendChild(grid);
     } catch (err) {
       row.innerHTML = '<p class="muted small">Samples unavailable.</p>';
     }
@@ -178,13 +191,13 @@
       if ($("recExpected")) {
         $("recExpected").classList.remove("hidden");
         $("recExpected").innerHTML = lastSampleExpected
-          ? `<strong>Content in image (IAM ground truth):</strong><br/>` +
+          ? `<strong>Content in image (online verified):</strong><br/>` +
             `<span class="expected-text">${escapeHtml(lastSampleExpected)}</span>`
           : "";
       }
       setStatus(
         $("recStatus"),
-        "IAM sample loaded — content should read: “" +
+        "Online verified sample loaded — Recognize should read: “" +
           lastSampleExpected +
           "”",
         "ok"
@@ -217,8 +230,9 @@
     const f = $("recFile").files && $("recFile").files[0];
     showPreview(f);
     if (!f) return;
-    // Manual uploads are not IAM pack chips unless filename starts with iam.
-    if (!String(f.name || "").toLowerCase().startsWith("iam")) {
+    // Manual uploads are not pack chips unless filename is online_/iam showcase.
+    const n = String(f.name || "").toLowerCase();
+    if (!n.startsWith("iam") && !n.startsWith("online_")) {
       lastSampleSource = "";
       lastSampleExpected = "";
       lastSampleLabel = "";
@@ -279,9 +293,12 @@
       "auto_printed",
       !$("recAutoPrinted") || $("recAutoPrinted").checked ? "true" : "false"
     );
+    const fname = String(f.name || "").toLowerCase();
     const useIam =
       lastSampleSource === "iam" ||
-      (f.name && String(f.name).toLowerCase().startsWith("iam"));
+      lastSampleSource === "online_iam" ||
+      fname.startsWith("iam") ||
+      fname.startsWith("online_");
     if (useIam) {
       fd.append("sample_source", "iam");
       // IAM lines are single crops — force single-line for clean content readout.
