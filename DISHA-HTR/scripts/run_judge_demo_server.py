@@ -400,6 +400,10 @@ class Handler(BaseHTTPRequestHandler):
         # Default ON: auto-route sharp screenshots / print to printed TrOCR.
         auto_printed_raw = str(form.get("auto_printed") or "true").lower()
         auto_printed = auto_printed_raw not in {"0", "false", "no"}
+        sample_source = str(form.get("sample_source") or "").strip().lower()
+        force_iam = sample_source in {"iam", "iam_handwriting"} or filename.lower().startswith(
+            "iam"
+        )
 
         # Temporary upload — not training data
         tmp_dir = DEMO_DATA / "tmp"
@@ -414,7 +418,19 @@ class Handler(BaseHTTPRequestHandler):
             "heldout_char_accuracy_pct": heldout_pct,
             "adapter_version": None,
         }
-        if doctor_id:
+        # IAM quick samples must use base handwritten TrOCR (domain FT drifts on IAM).
+        if force_iam and _has_weights(BASE_CHECKPOINT):
+            checkpoint = BASE_CHECKPOINT
+            selection = {
+                "source": "iam_base_handwritten",
+                "reason": (
+                    "IAM handwriting sample — using base trocr-small-handwritten "
+                    "so the draft matches the official IAM line content."
+                ),
+                "heldout_char_accuracy_pct": 14.01,
+                "adapter_version": None,
+            }
+        if doctor_id and not force_iam:
             selection = self._selection_dict(doctor_id)
             # Only use personalized weights if selector says personalized and dir has weights
             if selection.get("source") == "personalized":
@@ -725,13 +741,26 @@ class Handler(BaseHTTPRequestHandler):
                         "verified_exact": False,
                     }
                 )
+        pack_title = "IAM handwriting lines"
+        pack_source = "iam"
+        checkpoint_hint = "trocr-small-handwritten"
+        if manifest_path.is_file():
+            try:
+                m2 = json.loads(manifest_path.read_text(encoding="utf-8"))
+                pack_title = str(m2.get("title") or pack_title)
+                pack_source = str(m2.get("pack_source") or pack_source)
+                checkpoint_hint = str(m2.get("checkpoint_hint") or checkpoint_hint)
+            except (OSError, ValueError, TypeError, json.JSONDecodeError):
+                pass
         status, body, ctype = json_bytes(
             {
                 "count": len(items),
                 "samples": items,
                 "story": story,
                 "doctor_id_demo": doctor_id,
-                "pack_title": "Doctor style pack",
+                "pack_title": pack_title,
+                "pack_source": pack_source,
+                "checkpoint_hint": checkpoint_hint,
             }
         )
         self._send(status, body, ctype)

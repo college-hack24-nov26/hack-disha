@@ -114,6 +114,7 @@
 
   let lastSampleExpected = "";
   let lastSampleLabel = "";
+  let lastSampleSource = "";
 
   function normalizeCompare(s) {
     return (s || "").replace(/\s+/g, " ").trim();
@@ -129,11 +130,12 @@
         row.innerHTML = '<p class="muted small">No sample images found under demo/approved.</p>';
         return;
       }
+      window.__samplePackSource = data.pack_source || "iam";
       const head = document.createElement("div");
       head.className = "sample-pack-head";
       head.innerHTML =
-        `<strong>${escapeHtml(data.pack_title || "Doctor style pack")}</strong>` +
-        `<span class="muted"> · alphabet first, then personal phrases · verified exact output</span>`;
+        `<strong>${escapeHtml(data.pack_title || "IAM handwriting lines")}</strong>` +
+        `<span class="muted"> · official IAM transcription · clear content match</span>`;
       row.appendChild(head);
       if (data.story) {
         const story = document.createElement("p");
@@ -146,12 +148,12 @@
       data.samples.forEach((s) => {
         const btn = document.createElement("button");
         btn.type = "button";
-        btn.className = "sample-chip" + (s.stage === "style_feed" ? " stage-feed" : "");
-        btn.textContent = (s.label || s.id).slice(0, 36);
+        btn.className = "sample-chip stage-feed";
+        btn.textContent = (s.label || s.id).slice(0, 40);
         btn.title =
-          (s.expected_text ? "Expected: " + s.expected_text + "\n" : "") +
+          (s.expected_text ? "Content: " + s.expected_text + "\n" : "") +
           (s.why || s.id);
-        btn.addEventListener("click", () => useSample(s));
+        btn.addEventListener("click", () => useSample(s, data.pack_source || "iam"));
         chips.appendChild(btn);
       });
       row.appendChild(chips);
@@ -160,7 +162,7 @@
     }
   }
 
-  async function useSample(sample) {
+  async function useSample(sample, packSource) {
     try {
       const res = await fetch(sample.url);
       if (!res.ok) throw new Error("Could not load sample");
@@ -172,17 +174,19 @@
       showPreview(file);
       lastSampleExpected = sample.expected_text || "";
       lastSampleLabel = sample.label || sample.id;
+      lastSampleSource = packSource || window.__samplePackSource || "iam";
       if ($("recExpected")) {
         $("recExpected").classList.remove("hidden");
         $("recExpected").innerHTML = lastSampleExpected
-          ? `<strong>Expected (doctor pack):</strong> ${escapeHtml(lastSampleExpected)}`
+          ? `<strong>Content in image (IAM ground truth):</strong><br/>` +
+            `<span class="expected-text">${escapeHtml(lastSampleExpected)}</span>`
           : "";
       }
       setStatus(
         $("recStatus"),
-        "Doctor-style sample loaded: " +
-          (sample.label || sample.id) +
-          (lastSampleExpected ? " — expect exact: “" + lastSampleExpected + "”" : ""),
+        "IAM sample loaded — content should read: “" +
+          lastSampleExpected +
+          "”",
         "ok"
       );
       if ($("recAuto").checked) runRecognize(file);
@@ -213,6 +217,16 @@
     const f = $("recFile").files && $("recFile").files[0];
     showPreview(f);
     if (!f) return;
+    // Manual uploads are not IAM pack chips unless filename starts with iam.
+    if (!String(f.name || "").toLowerCase().startsWith("iam")) {
+      lastSampleSource = "";
+      lastSampleExpected = "";
+      lastSampleLabel = "";
+      if ($("recExpected")) {
+        $("recExpected").classList.add("hidden");
+        $("recExpected").textContent = "";
+      }
+    }
     setStatus($("recStatus"), "Image ready.", "ok");
     if ($("recAuto").checked) runRecognize(f);
   });
@@ -265,6 +279,16 @@
       "auto_printed",
       !$("recAutoPrinted") || $("recAutoPrinted").checked ? "true" : "false"
     );
+    const useIam =
+      lastSampleSource === "iam" ||
+      (f.name && String(f.name).toLowerCase().startsWith("iam"));
+    if (useIam) {
+      fd.append("sample_source", "iam");
+      // IAM lines are single crops — force single-line for clean content readout.
+      fd.set("force_single_line", "true");
+      fd.set("auto_printed", "false");
+      fd.set("force_printed", "false");
+    }
 
     const controller = new AbortController();
     const timeoutMs = 180000;
@@ -313,15 +337,16 @@
         const matched =
           normalizeCompare(text) === normalizeCompare(lastSampleExpected);
         matchNote = matched
-          ? " · exact match to doctor-pack expected text"
-          : " · differs from expected — check crop / options";
+          ? " · exact match to IAM content"
+          : " · differs from IAM ground truth";
         if ($("recExpected")) {
           $("recExpected").classList.remove("hidden");
           $("recExpected").innerHTML =
-            `<strong>Expected:</strong> ${escapeHtml(lastSampleExpected)}` +
+            `<strong>Content in image (IAM):</strong><br/>` +
+            `<span class="expected-text">${escapeHtml(lastSampleExpected)}</span>` +
             (matched
-              ? ` <span class="ok">· matched</span>`
-              : ` <span class="warn">· not exact</span>`) +
+              ? ` <span class="ok">· matched draft</span>`
+              : ` <span class="warn">· draft differs</span>`) +
             (lastSampleLabel
               ? `<br/><span class="muted">${escapeHtml(lastSampleLabel)}</span>`
               : "");

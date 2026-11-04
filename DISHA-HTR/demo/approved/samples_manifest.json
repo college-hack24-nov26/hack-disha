@@ -1,79 +1,91 @@
 {
-  "title": "Doctor style pack — quick samples",
-  "story": "In DISHA, each clinician can feed alphabet drills (A B a / H I) and personal phrases first. The model adapts to that hand, then recognition on matching lines is reliable. These quick samples are verified 100% matches on the active adapted checkpoint.",
-  "doctor_id_demo": "clinician_demo_style",
+  "title": "IAM handwriting lines",
+  "story": "These are real IAM handwriting research lines (Teklia / IAM). Each chip shows the official transcription. Recognition uses the base TrOCR handwritten model that matches this writing style, so the draft should clearly match the content in the image.",
+  "doctor_id_demo": "",
+  "pack_source": "iam",
+  "checkpoint_hint": "trocr-small-handwritten",
   "primary_metric": "exact_match",
-  "verified_on_checkpoint": "checkpoints/trocr-heldout-push",
+  "verified_on_checkpoint": "checkpoints/trocr-small-handwritten",
   "samples": [
     {
-      "id": "qs01_alphabet_ABa.png",
-      "label": "1 · Alphabet A B a",
-      "stage": "style_feed",
-      "expected_text": "A B a",
-      "why": "First feed letter drills so the model locks onto this clinician's letter shapes."
+      "id": "iam01_machine.png",
+      "label": "1 · regarded as a machine",
+      "stage": "iam",
+      "expected_text": "man could only be regarded as a machine .",
+      "why": "IAM line — official ground truth shown as expected content.",
+      "source_id": "test_00023.png"
     },
     {
-      "id": "qs09_letter_HI.png",
-      "label": "2 · Letters H I",
-      "stage": "style_feed",
-      "expected_text": "H I",
-      "why": "Short letter pairs continue the alphabet / style adaptation step."
+      "id": "iam02_mother.png",
+      "label": "2 · possessive mother",
+      "stage": "iam",
+      "expected_text": "She plays the possessive mother of a man whose hobby revolves",
+      "why": "IAM line — official ground truth shown as expected content.",
+      "source_id": "test_00010.png"
     },
     {
-      "id": "qs07_doctor_name.png",
-      "label": "3 · Doctor name line",
-      "stage": "personal_phrase",
-      "expected_text": "my Name is hemanth Kumar",
-      "why": "Personal identity phrase after alphabet feed."
+      "id": "iam03_everyday.png",
+      "label": "3 · everyday articles",
+      "stage": "iam",
+      "expected_text": "They will be asked to comment on the design of everyday articles",
+      "why": "IAM line — official ground truth shown as expected content.",
+      "source_id": "test_00016.png"
     },
     {
-      "id": "qs08_can_i_know.png",
-      "label": "4 · Can I know",
-      "stage": "personal_phrase",
-      "expected_text": "Can I know",
-      "why": "Short clinic-style question in this hand."
+      "id": "iam04_garages.png",
+      "label": "4 · director of garages",
+      "stage": "iam",
+      "expected_text": "He is also a director of a couple of garages . And he finds time as well to be a lyric",
+      "why": "IAM line — official ground truth shown as expected content.",
+      "source_id": "test_00006.png"
     },
     {
-      "id": "qs05_hello_pleased.png",
-      "label": "5 · Hello we are…",
-      "stage": "personal_phrase",
-      "expected_text": "Hello we are pleased to",
-      "why": "Longer greeting phrase adapted for this clinician."
+      "id": "iam05_spain.png",
+      "label": "5 · Lady of Spain",
+      "stage": "iam",
+      "expected_text": "writer . He writes with Tolchard Evans , composer of \" Lady of Spain \" and other big hits .",
+      "why": "IAM line — official ground truth shown as expected content.",
+      "source_id": "test_00007.png"
     },
     {
-      "id": "qs06_meet_you.png",
-      "label": "6 · meet you.",
-      "stage": "personal_phrase",
-      "expected_text": "meet you.",
-      "why": "Continuation phrase — clear full-word output."
+      "id": "iam06_authors.png",
+      "label": "6 · Brogan / Delaney",
+      "stage": "iam",
+      "expected_text": "Dennis Brogan , Shelagh Delaney , and Alan Sillitoe .",
+      "why": "IAM line — official ground truth shown as expected content.",
+      "source_id": "test_00040.png"
     },
     {
-      "id": "qs02_place_pin.png",
-      "label": "7 · Place + PIN",
-      "stage": "domain",
-      "expected_text": "Karnataka 585418",
-      "why": "Place name and PIN digits — exact on adapted model."
+      "id": "iam07_film.png",
+      "label": "7 · British film",
+      "stage": "iam",
+      "expected_text": "The film covered a wide aspect of the British",
+      "why": "IAM line — official ground truth shown as expected content.",
+      "source_id": "test_00043.png"
     },
     {
-      "id": "qs03_dsa_questions.png",
-      "label": "8 · DSA Questions…",
-      "stage": "domain",
-      "expected_text": "DSA Questions I feel",
-      "why": "Multi-word clinical/notes style line."
+      "id": "iam08_britain.png",
+      "label": "8 · Britain today",
+      "stage": "iam",
+      "expected_text": "strike . It showed Britain today through the eyes",
+      "why": "IAM line — official ground truth shown as expected content.",
+      "source_id": "test_00046.png"
     },
     {
-      "id": "qs04_happy_line.png",
-      "label": "9 · happy when…",
-      "stage": "domain",
-      "expected_text": "happy when I am about",
-      "why": "Fluent phrase with exact character match."
+      "id": "iam09_african.png",
+      "label": "9 · topicality of African",
+      "stage": "iam",
+      "expected_text": "the switch because of the topicality of African",
+      "why": "IAM line — official ground truth shown as expected content.",
+      "source_id": "test_00025.png"
     },
     {
-      "id": "qs10_innovation_topic.png",
-      "label": "10 · innovation topic",
-      "stage": "domain",
-      "expected_text": "Our innovation topic was",
-      "why": "Longer sentence — still exact on this style pack."
+      "id": "iam10_hypnosis.png",
+      "label": "10 · without hypnosis",
+      "stage": "iam",
+      "expected_text": "parts of the mind not normally available without hypnosis are used .",
+      "why": "IAM line — official ground truth shown as expected content.",
+      "source_id": "test_00020.png"
     }
   ]
 }
