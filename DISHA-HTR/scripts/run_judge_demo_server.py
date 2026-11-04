@@ -73,6 +73,24 @@ def _heldout_pct_from_snapshot(path: Path) -> float | None:
         return None
 
 
+def _heldout_wer_pct_from_snapshot(path: Path) -> float | None:
+    """Mean held-out WER % from snapshot when present (primary metric)."""
+    snap = path / "heldout_snapshot.json"
+    if not snap.is_file():
+        return None
+    try:
+        data = json.loads(snap.read_text(encoding="utf-8"))
+        if data.get("mean_wer") is not None:
+            return round(float(data["mean_wer"]) * 100.0, 2)
+        detail = data.get("heldout_detail") or []
+        wers = [float(d["wer"]) for d in detail if isinstance(d, dict) and "wer" in d]
+        if wers:
+            return round((sum(wers) / len(wers)) * 100.0, 2)
+        return None
+    except (OSError, ValueError, TypeError, json.JSONDecodeError, KeyError):
+        return None
+
+
 def resolve_active_checkpoint() -> tuple[Path, float, str]:
     """Prefer the strongest measured handwriting checkpoint."""
     base_pct = 14.01
@@ -236,6 +254,7 @@ class Handler(BaseHTTPRequestHandler):
         if path == "/api/health":
             ckpt, pct, reason = resolve_active_checkpoint()
             mean_cer = round(100.0 - float(pct), 2) if pct is not None else None
+            mean_wer = _heldout_wer_pct_from_snapshot(ckpt)
             status, body, ctype = json_bytes(
                 {
                     "ok": True,
@@ -244,10 +263,11 @@ class Handler(BaseHTTPRequestHandler):
                     "active_checkpoint": str(ckpt),
                     "heldout_char_accuracy_pct": pct,
                     "heldout_mean_cer_pct": mean_cer,
-                    "primary_metric": "cer",
+                    "heldout_mean_wer_pct": mean_wer,
+                    "primary_metric": "wer",
                     "heldout_char_accuracy_pct_base": 14.01,
                     "target_char_accuracy_pct": "70-80% held-out character accuracy",
-                    "target_mean_cer_pct": "20-30% mean CER on held-out",
+                    "target_mean_wer_pct": "lower held-out WER (word fidelity)",
                     "checkpoint_reason": reason,
                     "model_loaded": _loaded is not None,
                     "ts": utc_now(),
@@ -709,8 +729,10 @@ class Handler(BaseHTTPRequestHandler):
         from disha_htr.metrics import pair_error_rates
 
         # Clinician-corrected text is the reference; draft is the hypothesis.
-        # Unknown-doc quality is judged primarily by CER (character fidelity).
+        # Primary quality signal is WER (word fidelity on unknown docs).
         rates = pair_error_rates(draft[:4000], original)
+        wer = float(rates["wer"])
+        cer = float(rates["cer"])
         record = {
             "id": rid,
             "type": "transcription_correction",
@@ -723,13 +745,16 @@ class Handler(BaseHTTPRequestHandler):
                 "cer": rates["cer"],
                 "wer": rates["wer"],
                 "char_accuracy": rates["char_accuracy"],
-                "cer_pct": round(float(rates["cer"]) * 100.0, 2),
-                "wer_pct": round(float(rates["wer"]) * 100.0, 2),
+                "word_accuracy": round(1.0 - wer, 6),
+                "cer_pct": round(cer * 100.0, 2),
+                "wer_pct": round(wer * 100.0, 2),
                 "char_accuracy_pct": round(float(rates["char_accuracy"]) * 100.0, 2),
-                "primary": "cer",
+                "word_accuracy_pct": round((1.0 - wer) * 100.0, 2),
+                "primary": "wer",
                 "cer_worse_than_wer": rates["cer_worse_than_wer"],
+                "wer_worse_than_cer": bool(wer > cer),
             },
-            "note": "Clinician correction for testing/improvement — local only. CER is the primary quality signal.",
+            "note": "Clinician correction for testing/improvement — local only. WER is the primary quality signal.",
             "storageNote": "Local testing only — not the production DISHA database.",
         }
         out = DEMO_DATA / "corrections" / f"{rid}.json"

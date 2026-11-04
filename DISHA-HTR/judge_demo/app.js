@@ -78,31 +78,29 @@
         health.heldout_char_accuracy_pct != null
           ? health.heldout_char_accuracy_pct
           : health.heldout_char_accuracy_pct_base;
-      const cer =
-        health.heldout_mean_cer_pct != null
-          ? health.heldout_mean_cer_pct
-          : acc != null
-            ? Math.round((100 - Number(acc)) * 100) / 100
-            : null;
+      const wer =
+        health.heldout_mean_wer_pct != null ? health.heldout_mean_wer_pct : null;
+      const wordAcc =
+        wer != null ? Math.round((100 - Number(wer)) * 100) / 100 : acc;
       $("healthBanner").innerHTML =
-        `<span class="ok">Service online</span> · ` +
-        `live workspace · ${modelReady} · held-out CER ` +
-        `<strong>${cer}%</strong>` +
-        ` · char acc <strong>${acc}%</strong>`;
+        `<span class="ok">Online</span> · ${modelReady} · held-out WER ` +
+        `<strong>${wer != null ? wer : "—"}%</strong>` +
+        (wordAcc != null ? ` · word acc <strong>${wordAcc}%</strong>` : "");
       if ($("livePillText")) {
         $("livePillText").textContent =
-          cer != null ? `Live · CER ${cer}%` : `Live · ${acc}% held-out`;
+          wer != null ? `Live · WER ${wer}%` : `Live · ${acc}% held-out`;
       }
       const ck = await getJSON("/api/checkpoint");
-      $("checkpointInfo").textContent =
-        "Active model: " +
-        (ck.selected || "") +
-        " · " +
-        (ck.reason || "");
-      $("metricActive").textContent =
-        (ck.active_heldout_char_accuracy_pct != null
-          ? ck.active_heldout_char_accuracy_pct
-          : acc) + "%";
+      if ($("checkpointInfo")) {
+        $("checkpointInfo").textContent =
+          "Active model: " + (ck.selected || "") + " · " + (ck.reason || "");
+      }
+      if ($("metricActive")) {
+        $("metricActive").textContent = (wordAcc != null ? wordAcc : acc) + "%";
+      }
+      if ($("metricWer")) {
+        $("metricWer").textContent = wer != null ? wer + "%" : "—";
+      }
     } catch (err) {
       $("healthBanner").innerHTML =
         `<span class="warn">Service not reachable.</span> Start with ` +
@@ -279,10 +277,10 @@
       setStatus(
         $("recStatus"),
         text
-          ? `Recognition finished (${contentType}` +
+          ? `Done (${contentType}` +
               (selSrc ? ` · ${selSrc}` : "") +
-              "). Edit the draft, then save correction — CER is the primary score."
-          : "No reliable combined draft — check per-line results or try a sentence crop.",
+              "). Edit draft, then save — WER is the primary score."
+          : "No reliable draft — check per-line results or try a tighter crop.",
         text ? "ok" : "warn"
       );
     } catch (err) {
@@ -338,25 +336,23 @@
       const m = (data.record && data.record.metrics) || {};
       const cerPct = m.cer_pct != null ? m.cer_pct : null;
       const werPct = m.wer_pct != null ? m.wer_pct : null;
-      const cerNote =
-        cerPct != null
-          ? ` CER ${cerPct}%` +
-            (werPct != null ? ` (WER ${werPct}%)` : "") +
-            (m.cer_worse_than_wer ? " — character errors dominate" : "")
+      const werNote =
+        werPct != null
+          ? ` WER ${werPct}%` +
+            (cerPct != null ? ` · CER ${cerPct}%` : "") +
+            (m.wer_worse_than_cer ? " — word errors dominate" : "")
           : "";
-      setStatus(
-        $("recStatus"),
-        "Correction saved as " + data.record.id + "." + cerNote,
-        "ok"
-      );
+      setStatus($("recStatus"), "Saved " + data.record.id + "." + werNote, "ok");
       if ($("recCerBox")) {
         $("recCerBox").classList.remove("hidden");
         $("recCerBox").innerHTML =
-          cerPct != null
-            ? `<strong>CER ${cerPct}%</strong>` +
-              (werPct != null ? ` · WER ${werPct}%` : "") +
-              ` · char acc ${m.char_accuracy_pct != null ? m.char_accuracy_pct : "—"}%` +
-              `<span class="muted"> · primary metric is CER on unknown docs</span>`
+          werPct != null
+            ? `<strong>WER ${werPct}%</strong>` +
+              (cerPct != null ? ` · CER ${cerPct}%` : "") +
+              ` · word acc ${
+                m.word_accuracy_pct != null ? m.word_accuracy_pct : "—"
+              }%` +
+              `<span class="muted"> · primary = WER</span>`
             : "";
       }
       refreshRecords();

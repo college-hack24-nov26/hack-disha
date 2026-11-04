@@ -648,3 +648,123 @@ html, body {
 
   .hero h1 { max-width: none; }
 }
+
+/* Tightened workspace — recognition-first, less chrome */
+.shell {
+  max-width: 1040px;
+  padding: 0.75rem 0.9rem 1.6rem;
+}
+
+.topbar {
+  padding: 0.65rem 0.85rem;
+  border-radius: 12px;
+}
+
+.brand-mark {
+  font-size: clamp(1.35rem, 2.6vw, 1.7rem);
+}
+
+.status-strip {
+  margin: 0.65rem 0 0.55rem;
+  padding: 0.45rem 0.7rem;
+  font-size: 0.82rem;
+}
+
+.tabs {
+  margin-bottom: 0.55rem;
+  gap: 0.25rem;
+  padding: 0.22rem;
+}
+
+.tab {
+  padding: 0.4rem 0.7rem;
+  font-size: 0.8rem;
+}
+
+.panel {
+  padding: 0.85rem 0.9rem 0.95rem;
+  border-radius: 12px;
+}
+
+.panel-head.compact {
+  margin-bottom: 0.15rem;
+  align-items: center;
+}
+
+.panel h2 {
+  margin: 0;
+  font-size: 1.12rem;
+}
+
+.lead.short {
+  margin: 0.2rem 0 0.55rem;
+  font-size: 0.86rem;
+}
+
+.section-block.tight {
+  padding: 0.65rem 0.7rem;
+  margin-bottom: 0.65rem;
+}
+
+.adv-opts {
+  margin: 0.15rem 0 0.55rem;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: #fff;
+  padding: 0.35rem 0.55rem;
+}
+
+.adv-opts summary {
+  cursor: pointer;
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--muted);
+  list-style: none;
+}
+
+.adv-opts summary::-webkit-details-marker { display: none; }
+
+.adv-opts[open] summary {
+  margin-bottom: 0.35rem;
+  color: var(--accent-deep);
+}
+
+.adv-opts .field.check {
+  margin-bottom: 0.25rem;
+}
+
+.identity-grid.flat {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.45rem 0.65rem;
+  margin-bottom: 0.45rem;
+}
+
+.compact-preview {
+  min-height: 140px;
+}
+
+.metric-chip {
+  margin: 0.35rem 0 0;
+  padding: 0.4rem 0.55rem;
+  border-radius: 8px;
+  background: var(--accent-soft);
+  color: var(--accent-deep);
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.metric-chip.hidden { display: none; }
+
+.metric-row {
+  grid-template-columns: repeat(3, 1fr);
+}
+
+.draft-panel textarea {
+  min-height: 180px;
+}
+
+@media (max-width: 900px) {
+  .identity-grid.flat,
+  .metric-row { grid-template-columns: 1fr; }
+}
