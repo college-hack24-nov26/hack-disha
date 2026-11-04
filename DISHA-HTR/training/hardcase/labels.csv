@@ -159,35 +159,23 @@ hard_156.png,Ghatboral Iq,train,synthetic_hardcase
 hard_157.png,Ghatboral Iq,train,synthetic_hardcase
 hard_158.png,Ghatboral Iq,train,synthetic_hardcase
 hard_159.png,Ghatboral Iq,train,synthetic_hardcase
-hard_160.png,boral,train,synthetic_hardcase
-hard_161.png,boral,train,synthetic_hardcase
-hard_162.png,boral,val,synthetic_hardcase
-hard_163.png,boral,train,synthetic_hardcase
-hard_164.png,HEMANTH KUMAR,train,synthetic_hardcase
-hard_165.png,HEMANTH KUMAR,train,synthetic_hardcase
-hard_166.png,HEMANTH KUMAR,train,synthetic_hardcase
-hard_167.png,HEMANTH KUMAR,train,synthetic_hardcase
-hard_168.png,H E M A N T H,train,synthetic_hardcase
-hard_169.png,H E M A N T H,train,synthetic_hardcase
-hard_170.png,H E M A N T H,train,synthetic_hardcase
-hard_171.png,H E M A N T H,val,synthetic_hardcase
-hard_172.png,started,train,synthetic_hardcase
-hard_173.png,started,train,synthetic_hardcase
-hard_174.png,started,train,synthetic_hardcase
-hard_175.png,started,train,synthetic_hardcase
-hard_176.png,practicing,train,synthetic_hardcase
-hard_177.png,practicing,train,synthetic_hardcase
-hard_178.png,practicing,train,synthetic_hardcase
-hard_179.png,practicing,train,synthetic_hardcase
-hard_180.png,attended,val,synthetic_hardcase
-hard_181.png,attended,train,synthetic_hardcase
-hard_182.png,attended,train,synthetic_hardcase
-hard_183.png,attended,train,synthetic_hardcase
-hard_184.png,receipt,train,synthetic_hardcase
-hard_185.png,receipt,train,synthetic_hardcase
-hard_186.png,receipt,train,synthetic_hardcase
-hard_187.png,receipt,train,synthetic_hardcase
-hard_188.png,offer,train,synthetic_hardcase
-hard_189.png,offer,val,synthetic_hardcase
-hard_190.png,offer,train,synthetic_hardcase
-hard_191.png,offer,train,synthetic_hardcase
+hard_160.png,HEMANTH KUMAR,train,synthetic_hardcase
+hard_161.png,HEMANTH KUMAR,train,synthetic_hardcase
+hard_162.png,HEMANTH KUMAR,val,synthetic_hardcase
+hard_163.png,HEMANTH KUMAR,train,synthetic_hardcase
+hard_164.png,started practicing,train,synthetic_hardcase
+hard_165.png,started practicing,train,synthetic_hardcase
+hard_166.png,started practicing,train,synthetic_hardcase
+hard_167.png,started practicing,train,synthetic_hardcase
+hard_168.png,I Have started practicing,train,synthetic_hardcase
+hard_169.png,I Have started practicing,train,synthetic_hardcase
+hard_170.png,I Have started practicing,train,synthetic_hardcase
+hard_171.png,I Have started practicing,val,synthetic_hardcase
+hard_172.png,how are you today,train,synthetic_hardcase
+hard_173.png,how are you today,train,synthetic_hardcase
+hard_174.png,how are you today,train,synthetic_hardcase
+hard_175.png,how are you today,train,synthetic_hardcase
+hard_176.png,what is happening,train,synthetic_hardcase
+hard_177.png,what is happening,train,synthetic_hardcase
+hard_178.png,what is happening,train,synthetic_hardcase
+hard_179.png,what is happening,train,synthetic_hardcase

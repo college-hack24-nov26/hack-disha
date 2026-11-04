@@ -72,20 +72,18 @@ PHRASES = [
     "Can I know",
     "Hello we are pleased to",
     "meet you.",
-    # Unknown-doc / WhatsApp notebook CER focus (GT == rendered text).
+    # Unknown-doc / WhatsApp notebook phrases (GT == rendered text).
+    # Keep as whole words — spaced letter drills hurt WER.
     "we are participating in hackathon competition",
     "we are participating",
     "hackathon competition",
     "Ghatboral",
     "Ghatboral Iq",
-    "boral",
     "HEMANTH KUMAR",
-    "H E M A N T H",
-    "started",
-    "practicing",
-    "attended",
-    "receipt",
-    "offer",
+    "started practicing",
+    "I Have started practicing",
+    "how are you today",
+    "what is happening",
 ]
 
 

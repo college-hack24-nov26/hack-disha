@@ -175,8 +175,14 @@ def priority(text: str) -> int:
     n_words = word_count(text)
     if t in POISON_PHRASES:
         return 0
+    # Spaced single-letter dumps destroy WER (HEMANTH -> H E M A N T H).
+    letters = [w for w in t.split() if w]
+    if len(letters) >= 4 and all(len(w) == 1 and w.isalpha() for w in letters):
+        return 0
     # Phrase collapse killers: whole-word sequences that currently flip WER hard.
-    if t in {"how are you", "how are you?"} or "how are you" in t:
+    if t in {"how are you", "how are you?"} or t.startswith("how are you"):
+        return 6
+    if t.replace(" ", "") == "hemanth" or t in {"hemanth", "hemanth kumar"}:
         return 6
     if any(
         k in t
@@ -192,7 +198,7 @@ def priority(text: str) -> int:
     ):
         return 5
     if "hemanth" in t.replace(" ", "") or t == "a b a":
-        return 5
+        return 4
     if n_words >= 3:
         return 4
     if n_words == 2:
