@@ -29,6 +29,7 @@ sys.path.insert(0, str(ROOT / "src"))
 
 from disha_htr.line_clean import paper_clean_line, strong_phone_aug  # noqa: E402
 from disha_htr.metrics import character_error_rate, word_error_rate  # noqa: E402
+from disha_htr.wer_normalize import wer_normalize_hypothesis  # noqa: E402
 
 HELDOUT_NAMES = {
     "line01_ghatboral.png",
@@ -146,7 +147,9 @@ def heldout_wer(model, processor, device) -> tuple[float, float, float, list[dic
             image = Image.open(path).convert("RGB")
             pv = processor(images=image, return_tensors="pt").pixel_values.to(device)
             out = model.generate(pv, max_new_tokens=64, num_beams=6)
-            pred = processor.batch_decode(out, skip_special_tokens=True)[0].strip()
+            pred = wer_normalize_hypothesis(
+                processor.batch_decode(out, skip_special_tokens=True)[0].strip()
+            )
             cer = character_error_rate(text, pred)
             wer = word_error_rate(text, pred)
             detail.append(
@@ -197,8 +200,13 @@ def priority(text: str) -> int:
         )
     ):
         return 5
-    if "hemanth" in t.replace(" ", "") or t == "a b a":
-        return 4
+    # Alphabet drills (Aa Bb / A B a) teach spaced letters — skip for WER.
+    if t in {"a b a", "a b c", "h i"} or (
+        n_words >= 2 and all(len(w) <= 2 and w.replace(".", "").isalpha() for w in t.split())
+    ):
+        return 0
+    if "hemanth" in t.replace(" ", ""):
+        return 5
     if n_words >= 3:
         return 4
     if n_words == 2:

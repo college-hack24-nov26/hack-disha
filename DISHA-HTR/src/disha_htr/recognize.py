@@ -12,6 +12,7 @@ import torch
 
 from .model_loader import LoadedModel
 from .preprocess import load_image, prepare_for_trocr
+from .wer_normalize import wer_normalize_hypothesis
 
 logger = logging.getLogger("disha_htr.recognize")
 
@@ -99,7 +100,7 @@ def recognize_image(
         inference_time_s = time.perf_counter() - t0
 
         text = loaded.processor.batch_decode(generated_ids, skip_special_tokens=True)[0]
-        text = (text or "").strip()
+        text = wer_normalize_hypothesis((text or "").strip())
     except FileNotFoundError:
         logger.exception("Image not found: %s", path)
         raise
