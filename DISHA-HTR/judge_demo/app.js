@@ -39,6 +39,30 @@
   let lastOriginalText = "";
   let lastFilename = "";
   let lastCheckpoint = "";
+  let lastSampleId = "";
+  let lastSampleExpected = "";
+  let lastSampleLabel = "";
+  let lastSampleSource = "";
+  let selectedSampleToken = 0;
+
+  function normalizeCompare(s) {
+    return (s || "").replace(/\s+/g, " ").trim();
+  }
+
+  function clearSampleSelection() {
+    lastSampleId = "";
+    lastSampleExpected = "";
+    lastSampleLabel = "";
+    lastSampleSource = "";
+    document.querySelectorAll(".sample-card.selected").forEach((el) => {
+      el.classList.remove("selected");
+    });
+    if ($("recSampleId")) $("recSampleId").textContent = "";
+    if ($("recReference")) $("recReference").textContent = "—";
+    if ($("recPrediction")) $("recPrediction").textContent = "—";
+    if ($("recDiffRow")) $("recDiffRow").classList.add("hidden");
+    if ($("recConfidenceRow")) $("recConfidenceRow").classList.add("hidden");
+  }
 
   function renderArchiveSummary(record) {
     const view = $("legResultView");
@@ -122,39 +146,120 @@
         row.innerHTML = '<p class="muted small">No sample images found under demo/approved.</p>';
         return;
       }
-      const label = document.createElement("span");
-      label.className = "sample-label";
-      label.textContent = "Quick samples:";
-      row.appendChild(label);
-      data.samples.slice(0, 8).forEach((s) => {
-        const btn = document.createElement("button");
-        btn.type = "button";
-        btn.className = "sample-chip";
-        btn.textContent = s.label.replace(/^demo \d+ /i, "").slice(0, 28);
-        btn.title = s.id;
-        btn.addEventListener("click", () => useSample(s));
-        row.appendChild(btn);
+      window.__samplePackSource = data.pack_source || "iam";
+      const head = document.createElement("div");
+      head.className = "sample-pack-head";
+      const verifiedN =
+        data.verified_count != null ? data.verified_count : data.samples.length;
+      head.innerHTML =
+        `<strong>${escapeHtml(data.pack_title || "Verified IAM samples")}</strong>` +
+        `<span class="badge-verified">${escapeHtml(String(verifiedN))} with reference · Hugging Face</span>`;
+      row.appendChild(head);
+      if (data.story) {
+        const story = document.createElement("p");
+        story.className = "sample-story muted small";
+        story.textContent = data.story;
+        row.appendChild(story);
+      }
+      const grid = document.createElement("div");
+      grid.className = "sample-showcase";
+      data.samples.forEach((s) => {
+        const card = document.createElement("button");
+        card.type = "button";
+        card.className = "sample-card";
+        card.dataset.sampleId = s.sample_id || s.id;
+        card.title = s.expected_text || s.id;
+        const img = document.createElement("img");
+        img.src = s.url;
+        img.alt = s.label || s.id;
+        img.loading = "lazy";
+        const meta = document.createElement("div");
+        meta.className = "sample-card-meta";
+        const ref = s.expected_text || s.verified_reference || "";
+        const verifiedTag = ref
+          ? `<span class="sample-card-tag">Verified reference</span>`
+          : `<span class="sample-card-tag unverified">No reference</span>`;
+        meta.innerHTML =
+          `<span class="sample-card-label">${escapeHtml(s.label || s.id)}</span>` +
+          `<span class="sample-card-text">${escapeHtml(ref.slice(0, 72))}${
+            ref.length > 72 ? "..." : ""
+          }</span>` +
+          verifiedTag;
+        card.appendChild(img);
+        card.appendChild(meta);
+        card.addEventListener("click", () => useSample(s, data.pack_source || "iam"));
+        grid.appendChild(card);
       });
+      row.appendChild(grid);
     } catch (err) {
       row.innerHTML = '<p class="muted small">Samples unavailable.</p>';
     }
   }
 
-  async function useSample(sample) {
+  async function useSample(sample, packSource) {
+    const token = ++selectedSampleToken;
     try {
       const res = await fetch(sample.url);
       if (!res.ok) throw new Error("Could not load sample");
       const blob = await res.blob();
-      const file = new File([blob], sample.id, { type: "image/png" });
+      if (token !== selectedSampleToken) return;
+      const fileName = sample.id || (sample.sample_id || "sample") + ".png";
+      const file = new File([blob], fileName, { type: "image/png" });
       const dt = new DataTransfer();
       dt.items.add(file);
       $("recFile").files = dt.files;
       showPreview(file);
-      setStatus($("recStatus"), "Sample loaded: " + sample.id, "ok");
-      if ($("recAuto").checked) runRecognize(file);
+
+      document.querySelectorAll(".sample-card.selected").forEach((el) => {
+        el.classList.remove("selected");
+      });
+      const sid = sample.sample_id || PathStem(sample.id);
+      document.querySelectorAll(".sample-card").forEach((el) => {
+        if (el.dataset.sampleId === sid) el.classList.add("selected");
+      });
+
+      lastSampleId = sid;
+      lastSampleExpected = (sample.expected_text || sample.verified_reference || "").trim();
+      lastSampleLabel = sample.label || sample.id;
+      lastSampleSource = packSource || window.__samplePackSource || "iam";
+
+      // Clear previous prediction/reference immediately so samples never mix.
+      $("recText").value = "";
+      lastOriginalText = "";
+      if ($("recPrediction")) $("recPrediction").textContent = "—";
+      if ($("recReference")) {
+        $("recReference").textContent = lastSampleExpected || "—";
+      }
+      if ($("recSampleId")) {
+        $("recSampleId").textContent = lastSampleId ? " · " + lastSampleId : "";
+      }
+      if ($("recDiffRow")) $("recDiffRow").classList.add("hidden");
+      if ($("recConfidenceRow")) $("recConfidenceRow").classList.add("hidden");
+      if ($("recLines")) {
+        $("recLines").innerHTML = "";
+        $("recLines").classList.add("hidden");
+      }
+      if ($("recMeta")) $("recMeta").textContent = "";
+      if ($("recNote")) $("recNote").textContent = "";
+      if ($("recCerBox")) $("recCerBox").classList.add("hidden");
+
+      setStatus(
+        $("recStatus"),
+        lastSampleExpected
+          ? "Sample " + lastSampleId + " loaded with verified reference."
+          : "Sample " + lastSampleId + " loaded (no verified reference).",
+        "ok"
+      );
+      if ($("recAuto").checked) runRecognize(file, token);
     } catch (err) {
       setStatus($("recStatus"), "Sample error: " + err.message, "warn");
     }
+  }
+
+  function PathStem(name) {
+    const n = String(name || "");
+    const i = n.lastIndexOf(".");
+    return i > 0 ? n.slice(0, i) : n;
   }
 
   let recObjectUrl = null;
@@ -179,6 +284,10 @@
     const f = $("recFile").files && $("recFile").files[0];
     showPreview(f);
     if (!f) return;
+    const n = String(f.name || "").toLowerCase();
+    if (!n.startsWith("iam") && !n.startsWith("online_")) {
+      clearSampleSelection();
+    }
     setStatus($("recStatus"), "Image ready.", "ok");
     if ($("recAuto").checked) runRecognize(f);
   });
@@ -197,7 +306,60 @@
     }
   }
 
-  async function runRecognize(file) {
+  function renderCompactResult(prediction, reference, lines, sampleId) {
+    if ($("recPrediction")) {
+      $("recPrediction").textContent = prediction || "—";
+    }
+    if ($("recReference")) {
+      $("recReference").textContent = reference || "—";
+    }
+    if ($("recSampleId")) {
+      $("recSampleId").textContent = sampleId ? " · " + sampleId : "";
+    }
+    const diffRow = $("recDiffRow");
+    const diffEl = $("recDiff");
+    if (diffRow && diffEl) {
+      if (reference && prediction) {
+        const matched =
+          normalizeCompare(prediction) === normalizeCompare(reference);
+        if (matched) {
+          diffRow.classList.remove("hidden");
+          diffEl.className = "recog-v ok";
+          diffEl.textContent = "Prediction matches verified reference";
+        } else {
+          diffRow.classList.remove("hidden");
+          diffEl.className = "recog-v warn";
+          diffEl.textContent =
+            "Prediction differs from verified reference (shown above separately)";
+        }
+      } else {
+        diffRow.classList.add("hidden");
+      }
+    }
+    const confRow = $("recConfidenceRow");
+    const confEl = $("recConfidence");
+    if (confRow && confEl) {
+      const low = (lines || []).filter((ln) => ln.status === "low_confidence");
+      const ok = (lines || []).filter((ln) => ln.status === "ok");
+      // Confidence reflects model output only — never the verified reference.
+      if (low.length) {
+        confRow.classList.remove("hidden");
+        confEl.className = "recog-v warn";
+        confEl.textContent =
+          low.length +
+          " low-confidence model line(s)" +
+          (ok.length ? " · " + ok.length + " ok" : "");
+      } else if ((lines || []).length) {
+        confRow.classList.remove("hidden");
+        confEl.className = "recog-v ok";
+        confEl.textContent = "Model lines reported ok";
+      } else {
+        confRow.classList.add("hidden");
+      }
+    }
+  }
+
+  async function runRecognize(file, selectionToken) {
     if (recognizing) return;
     const f = file || ($("recFile").files && $("recFile").files[0]);
     if (!f) {
@@ -210,10 +372,16 @@
       return;
     }
 
+    const requestSampleId = lastSampleId;
+    const requestExpected = lastSampleExpected;
+
     $("recText").value = "";
     $("recMeta").textContent = "";
     $("recTime").textContent = "";
     $("recNote").textContent = "";
+    if ($("recPrediction")) $("recPrediction").textContent = "—";
+    if ($("recDiffRow")) $("recDiffRow").classList.add("hidden");
+    if ($("recConfidenceRow")) $("recConfidenceRow").classList.add("hidden");
     lastOriginalText = "";
     lastFilename = f.name;
     lastCheckpoint = "";
@@ -231,6 +399,21 @@
       "auto_printed",
       !$("recAutoPrinted") || $("recAutoPrinted").checked ? "true" : "false"
     );
+    const fname = String(f.name || "").toLowerCase();
+    const useIam =
+      lastSampleSource === "iam" ||
+      lastSampleSource === "online_iam" ||
+      fname.startsWith("iam") ||
+      fname.startsWith("online_");
+    if (useIam) {
+      fd.append("sample_source", "iam");
+      fd.set("force_single_line", "true");
+      fd.set("auto_printed", "false");
+      fd.set("force_printed", "false");
+    }
+    if (requestSampleId) {
+      fd.append("sample_id", requestSampleId);
+    }
 
     const controller = new AbortController();
     const timeoutMs = 180000;
@@ -249,24 +432,54 @@
         signal: controller.signal,
       });
 
-      const text = (data.text || "").trim();
+      // Drop stale responses if the user clicked another sample mid-request.
+      if (
+        selectionToken != null &&
+        selectionToken !== selectedSampleToken
+      ) {
+        return;
+      }
+      if (requestSampleId && lastSampleId && requestSampleId !== lastSampleId) {
+        return;
+      }
+
+      const lines = (data.recognition && data.recognition.lines) || [];
+      // Prefer combined draft; if sanitizer cleared it, still surface raw line texts
+      // so the UI never substitutes the verified reference for the model output.
+      let text = (data.text || "").trim();
+      if (!text && lines.length) {
+        text = lines
+          .map((ln) => (ln.text || "").trim())
+          .filter(Boolean)
+          .join("\n")
+          .trim();
+      }
       lastOriginalText = text;
       lastCheckpoint = data.checkpoint || "";
-      $("recText").value =
-        text ||
-        "(No reliable draft kept. See per-line attempts below — alphabet drills often confuse this English-word model.)";
+      $("recText").value = text;
       $("recTime").textContent =
         data.inference_time_s != null ? `(${data.inference_time_s}s)` : "";
       $("recNote").textContent =
         (data.recognition && data.recognition.segmentation_note) || data.storage_note || "";
-      renderLines((data.recognition && data.recognition.lines) || []);
+      // Keep per-line panel compact: only open when model reported low-confidence lines.
+      const lowLines = lines.filter((ln) => ln.status === "low_confidence");
+      if (lowLines.length) {
+        renderLines(lowLines);
+      } else if ($("recLines")) {
+        $("recLines").innerHTML = "";
+        $("recLines").classList.add("hidden");
+      }
+      renderCompactResult(text, requestExpected, lines, requestSampleId || lastSampleId);
       $("recMeta").textContent = JSON.stringify(
         {
+          sample_id: requestSampleId || null,
+          verified_reference: requestExpected || null,
+          model_prediction: text,
           checkpoint: data.checkpoint,
           selection: data.selection,
           mode: data.recognition && data.recognition.mode,
           n_lines: data.recognition && data.recognition.n_lines_detected,
-          lines: (data.recognition && data.recognition.lines) || [],
+          lines: lines,
         },
         null,
         2
@@ -274,16 +487,31 @@
       const contentType =
         (data.recognition && data.recognition.content_type) || "handwriting";
       const selSrc = (data.selection && data.selection.source) || "";
+      let matchNote = "";
+      if (requestExpected) {
+        matchNote =
+          normalizeCompare(text) === normalizeCompare(requestExpected)
+            ? " · prediction matches reference"
+            : " · prediction differs from reference";
+      }
       setStatus(
         $("recStatus"),
         text
           ? `Done (${contentType}` +
               (selSrc ? ` · ${selSrc}` : "") +
-              "). Edit draft, then save — WER is the primary score."
-          : "No reliable draft — check per-line results or try a tighter crop.",
+              ")" +
+              matchNote +
+              "."
+          : "No model prediction — check options or try a tighter crop.",
         text ? "ok" : "warn"
       );
     } catch (err) {
+      if (
+        selectionToken != null &&
+        selectionToken !== selectedSampleToken
+      ) {
+        return;
+      }
       const aborted = err && err.name === "AbortError";
       setStatus(
         $("recStatus"),
@@ -293,6 +521,7 @@
         "warn"
       );
       $("recText").value = "";
+      if ($("recPrediction")) $("recPrediction").textContent = "—";
     } finally {
       clearTimeout(timer);
       setRecognizing(false);
@@ -302,19 +531,37 @@
   $("btnRecognize").addEventListener("click", () => runRecognize());
 
   $("btnCopyDraft").addEventListener("click", async () => {
-    const text = $("recText").value.trim();
-    if (!text) {
+    const text =
+      ($("recPrediction") && $("recPrediction").textContent.trim()) ||
+      $("recText").value.trim();
+    if (!text || text === "—") {
       setStatus($("recStatus"), "Nothing to copy.", "warn");
       return;
     }
     try {
       await navigator.clipboard.writeText(text);
-      setStatus($("recStatus"), "Draft copied.", "ok");
+      setStatus($("recStatus"), "Model prediction copied.", "ok");
     } catch {
       $("recText").select();
       setStatus($("recStatus"), "Select-all ready — press Ctrl+C.", "");
     }
   });
+
+  if ($("btnCopyReference")) {
+    $("btnCopyReference").addEventListener("click", async () => {
+      const text = (lastSampleExpected || "").trim();
+      if (!text) {
+        setStatus($("recStatus"), "No verified reference for this selection.", "warn");
+        return;
+      }
+      try {
+        await navigator.clipboard.writeText(text);
+        setStatus($("recStatus"), "Verified reference copied.", "ok");
+      } catch {
+        setStatus($("recStatus"), "Copy failed — select reference text manually.", "warn");
+      }
+    });
+  }
 
   $("btnSaveCorrection").addEventListener("click", async () => {
     const corrected = $("recText").value.trim();
@@ -516,7 +763,7 @@
     box.classList.remove("hidden");
     const title = document.createElement("p");
     title.className = "muted small";
-    title.textContent = "Per-line attempts (top → bottom):";
+    title.textContent = "Low-confidence model lines:";
     box.appendChild(title);
     lines.forEach((ln) => {
       const row = document.createElement("div");

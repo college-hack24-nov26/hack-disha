@@ -91,6 +91,19 @@ class TestHallucinationGuards(unittest.TestCase):
         self.assertEqual(combined, text)
         self.assertEqual(err, "")
 
+    def test_iam_fluent_line_kept_when_allowed(self) -> None:
+        # IAM showcase lines are fluent English; without allow_fluent they are wiped.
+        text = (
+            "She plays the possessive mother of a man whose hobby revolves"
+        )
+        self.assertTrue(_looks_like_fluent_hallucination(text))
+        _disp, wiped, err = _sanitize_line_text(text, allow_fluent_english=False)
+        self.assertEqual(wiped, "")
+        self.assertEqual(err, "fluent_hallucination")
+        _disp2, kept, err2 = _sanitize_line_text(text, allow_fluent_english=True)
+        self.assertEqual(kept, text)
+        self.assertEqual(err2, "")
+
 
 class TestPrintDetect(unittest.TestCase):
     def test_sharp_digital_text_detected(self) -> None:

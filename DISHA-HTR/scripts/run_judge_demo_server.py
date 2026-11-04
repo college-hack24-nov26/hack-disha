@@ -400,6 +400,14 @@ class Handler(BaseHTTPRequestHandler):
         # Default ON: auto-route sharp screenshots / print to printed TrOCR.
         auto_printed_raw = str(form.get("auto_printed") or "true").lower()
         auto_printed = auto_printed_raw not in {"0", "false", "no"}
+        sample_source = str(form.get("sample_source") or "").strip().lower()
+        sample_id = str(form.get("sample_id") or "").strip()
+        force_iam = sample_source in {
+            "iam",
+            "iam_handwriting",
+            "online_iam",
+            "online",
+        } or filename.lower().startswith(("iam", "online_"))
 
         # Temporary upload — not training data
         tmp_dir = DEMO_DATA / "tmp"
@@ -413,9 +421,24 @@ class Handler(BaseHTTPRequestHandler):
             "reason": ck_reason,
             "heldout_char_accuracy_pct": heldout_pct,
             "adapter_version": None,
+            "sample_id": sample_id or None,
         }
-        if doctor_id:
+        # IAM showcase samples must use base handwritten TrOCR (domain FT drifts on IAM).
+        if force_iam and _has_weights(BASE_CHECKPOINT):
+            checkpoint = BASE_CHECKPOINT
+            selection = {
+                "source": "iam_base_handwritten",
+                "reason": (
+                    "IAM showcase sample — base trocr-small-handwritten for this pack. "
+                    "Verified reference text is ground truth, not a substituted prediction."
+                ),
+                "heldout_char_accuracy_pct": 14.01,
+                "adapter_version": None,
+                "sample_id": sample_id or None,
+            }
+        if doctor_id and not force_iam:
             selection = self._selection_dict(doctor_id)
+            selection["sample_id"] = sample_id or None
             # Only use personalized weights if selector says personalized and dir has weights
             if selection.get("source") == "personalized":
                 cand = Path(selection["checkpoint_dir"])
@@ -435,9 +458,15 @@ class Handler(BaseHTTPRequestHandler):
             from disha_htr.print_detect import looks_like_printed_text
 
             bgr = cv2.imread(str(tmp_path), cv2.IMREAD_COLOR)
-            use_printed = force_printed or (
-                auto_printed and bgr is not None and looks_like_printed_text(bgr)
+            # IAM showcase lines are handwriting crops — do not auto-route to printed OCR.
+            use_printed = False if force_iam else (
+                force_printed
+                or (auto_printed and bgr is not None and looks_like_printed_text(bgr))
             )
+            if force_iam:
+                force_single = True
+                auto_printed = False
+                force_printed = False
             if use_printed:
                 loaded = load_printed_model()
                 checkpoint = PRINTED_CHECKPOINT
@@ -459,6 +488,8 @@ class Handler(BaseHTTPRequestHandler):
                 force_single_line=force_single,
                 force_printed=use_printed,
                 auto_printed=False,  # already decided above
+                # IAM lines are fluent English; do not wipe real predictions.
+                allow_fluent_english=True if (force_iam or use_printed) else None,
                 max_lines=40 if use_printed else 12,
             )
             payload = {
@@ -685,17 +716,78 @@ class Handler(BaseHTTPRequestHandler):
         self._send(404, b"missing", "text/plain")
 
     def _list_samples(self) -> None:
+        """Curated IAM pack from samples_manifest.json; fallback to raw PNGs."""
         items = []
-        if SAMPLES_DIR.is_dir():
+        story = ""
+        manifest_path = SAMPLES_DIR / "samples_manifest.json"
+        if manifest_path.is_file():
+            try:
+                manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+                story = str(manifest.get("story") or "")
+                for row in manifest.get("samples") or []:
+                    name = str(row.get("id") or "").strip()
+                    if not name or not (SAMPLES_DIR / name).is_file():
+                        continue
+                    expected = str(row.get("expected_text") or "").strip()
+                    sample_id = str(row.get("sample_id") or Path(name).stem).strip()
+                    # Only mark verified when a real reference transcription exists.
+                    verified = bool(expected)
+                    items.append(
+                        {
+                            "id": name,
+                            "sample_id": sample_id,
+                            "label": str(row.get("label") or sample_id),
+                            "expected_text": expected,
+                            "verified_reference": expected,
+                            "stage": str(row.get("stage") or ""),
+                            "why": str(row.get("why") or ""),
+                            "url": "/api/samples/" + name,
+                            "verified_exact": verified,
+                        }
+                    )
+            except (OSError, ValueError, TypeError, json.JSONDecodeError):
+                items = []
+        if not items and SAMPLES_DIR.is_dir():
             for p in sorted(SAMPLES_DIR.glob("*.png"))[:24]:
                 items.append(
                     {
                         "id": p.name,
+                        "sample_id": p.stem,
                         "label": p.stem.replace("_", " "),
+                        "expected_text": "",
+                        "verified_reference": "",
+                        "stage": "",
+                        "why": "",
                         "url": "/api/samples/" + p.name,
+                        "verified_exact": False,
                     }
                 )
-        status, body, ctype = json_bytes({"count": len(items), "samples": items})
+        pack_title = "Verified IAM sample showcase"
+        pack_source = "iam"
+        checkpoint_hint = "trocr-small-handwritten"
+        source_note = ""
+        if manifest_path.is_file():
+            try:
+                m2 = json.loads(manifest_path.read_text(encoding="utf-8"))
+                pack_title = str(m2.get("title") or pack_title)
+                pack_source = str(m2.get("pack_source") or pack_source)
+                checkpoint_hint = str(m2.get("checkpoint_hint") or checkpoint_hint)
+                source_note = str(m2.get("source_note") or "")
+            except (OSError, ValueError, TypeError, json.JSONDecodeError):
+                pass
+        verified_count = sum(1 for s in items if s.get("verified_exact"))
+        status, body, ctype = json_bytes(
+            {
+                "count": len(items),
+                "samples": items,
+                "story": story,
+                "pack_title": pack_title,
+                "pack_source": pack_source,
+                "checkpoint_hint": checkpoint_hint,
+                "source_note": source_note,
+                "verified_count": verified_count,
+            }
+        )
         self._send(status, body, ctype)
 
     def _sample_file(self, name: str) -> None:

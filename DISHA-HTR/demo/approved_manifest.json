@@ -1,97 +1,76 @@
 {
   "images": [
     {
-      "id": "demo_02_nc01_hi",
-      "filename": "demo_02_nc01_hi.png",
-      "source_page": "non_cursive/NC01.jpeg",
-      "label": "H I",
-      "train_source": "train_nc01_hi.png"
+      "id": "online_01",
+      "filename": "online_01.png",
+      "source_page": "Teklia/IAM-line test hf_index=6",
+      "label": "He is also a director of a couple of garages . And he finds time as well to be a lyric",
+      "train_source": null
     },
     {
-      "id": "demo_03_nc01_name1",
-      "filename": "demo_03_nc01_name1.png",
-      "source_page": "non_cursive/NC01.jpeg",
-      "label": "my Name is hemanth Kumar",
-      "train_source": "train_nc01_name1.png"
+      "id": "online_02",
+      "filename": "online_02.png",
+      "source_page": "Teklia/IAM-line test hf_index=10",
+      "label": "She plays the possessive mother of a man whose hobby revolves",
+      "train_source": null
     },
     {
-      "id": "demo_04_nc01_what",
-      "filename": "demo_04_nc01_what.png",
-      "source_page": "non_cursive/NC01.jpeg",
-      "label": "what is your name",
-      "train_source": "train_nc01_what.png"
+      "id": "online_03",
+      "filename": "online_03.png",
+      "source_page": "Teklia/IAM-line test hf_index=16",
+      "label": "They will be asked to comment on the design of everyday articles",
+      "train_source": null
     },
     {
-      "id": "demo_05_nc01_can",
-      "filename": "demo_05_nc01_can.png",
-      "source_page": "non_cursive/NC01.jpeg",
-      "label": "Can I know",
-      "train_source": "train_nc01_can.png"
+      "id": "online_04",
+      "filename": "online_04.png",
+      "source_page": "Teklia/IAM-line test hf_index=18",
+      "label": "such as a chair and a motor-car . The idea is to see what happens when",
+      "train_source": null
     },
     {
-      "id": "demo_06_cu01_hello",
-      "filename": "demo_06_cu01_hello.png",
-      "source_page": "cursive/CU01.jpeg",
-      "label": "Hello we are pleased to",
-      "train_source": "train_cu01_hello.png"
+      "id": "online_05",
+      "filename": "online_05.png",
+      "source_page": "Teklia/IAM-line test hf_index=20",
+      "label": "parts of the mind not normally available without hypnosis are used .",
+      "train_source": null
     },
     {
-      "id": "demo_07_cu01_meet",
-      "filename": "demo_07_cu01_meet.png",
-      "source_page": "cursive/CU01.jpeg",
-      "label": "meet you.",
-      "train_source": "train_cu01_meet.png"
+      "id": "online_06",
+      "filename": "online_06.png",
+      "source_page": "Teklia/IAM-line test hf_index=23",
+      "label": "man could only be regarded as a machine .",
+      "train_source": null
     },
     {
-      "id": "demo_08_cu01_topic",
-      "filename": "demo_08_cu01_topic.png",
-      "source_page": "cursive/CU01.jpeg",
-      "label": "Our innovation topic was",
-      "train_source": "train_cu01_topic.png"
+      "id": "online_07",
+      "filename": "online_07.png",
+      "source_page": "Teklia/IAM-line test hf_index=25",
+      "label": "the switch because of the topicality of African",
+      "train_source": null
     },
     {
-      "id": "demo_09_cu01_phase",
-      "filename": "demo_09_cu01_phase.png",
-      "source_page": "cursive/CU01.jpeg",
-      "label": "development phase of",
-      "train_source": "train_cu01_phase.png"
+      "id": "online_08",
+      "filename": "online_08.png",
+      "source_page": "Teklia/IAM-line test hf_index=40",
+      "label": "Dennis Brogan , Shelagh Delaney , and Alan Sillitoe .",
+      "train_source": null
     },
     {
-      "id": "demo_10_cu01_hack",
-      "filename": "demo_10_cu01_hack.png",
-      "source_page": "cursive/CU01.jpeg",
-      "label": "our hackathon.",
-      "train_source": "train_cu01_hack.png"
+      "id": "online_09",
+      "filename": "online_09.png",
+      "source_page": "Teklia/IAM-line test hf_index=43",
+      "label": "The film covered a wide aspect of the British",
+      "train_source": null
     },
     {
-      "id": "demo_11_cu01_today",
-      "filename": "demo_11_cu01_today.png",
-      "source_page": "cursive/CU01.jpeg",
-      "label": "today attended the",
-      "train_source": "train_cu01_today.png"
-    },
-    {
-      "id": "demo_12_cu01_progress",
-      "filename": "demo_12_cu01_progress.png",
-      "source_page": "cursive/CU01.jpeg",
-      "label": "The overall progress of",
-      "train_source": "train_cu01_progress.png"
-    },
-    {
-      "id": "demo_13_cu01_project",
-      "filename": "demo_13_cu01_project.png",
-      "source_page": "cursive/CU01.jpeg",
-      "label": "the project is going",
-      "train_source": "train_cu01_project.png"
-    },
-    {
-      "id": "demo_14_cu01_well",
-      "filename": "demo_14_cu01_well.png",
-      "source_page": "cursive/CU01.jpeg",
-      "label": "well.",
-      "train_source": "train_cu01_well.png"
+      "id": "online_10",
+      "filename": "online_10.png",
+      "source_page": "Teklia/IAM-line test hf_index=44",
+      "label": "Guest \" programmes because of an electricians'",
+      "train_source": null
     }
   ],
-  "note": "Gallery for UI only; GT not stored here. Held-out metrics use eval_private/.",
-  "checkpoint_preference": "trocr-demo-finetuned if present else base"
+  "note": "Gallery images for Recognition showcase. Official IAM transcriptions live in demo/approved/samples_manifest.json keyed by sample_id. Held-out metrics still use eval_private/.",
+  "checkpoint_preference": "trocr-small-handwritten for IAM showcase samples"
 }

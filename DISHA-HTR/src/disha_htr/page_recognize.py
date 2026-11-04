@@ -181,6 +181,7 @@ def recognize_page_or_line(
     force_single_line: bool = False,
     force_printed: bool = False,
     auto_printed: bool = True,
+    allow_fluent_english: bool | None = None,
     max_lines: int = 40,
     max_new_tokens: int | None = None,
 ) -> PageRecognitionResult:
@@ -193,6 +194,8 @@ def recognize_page_or_line(
 
     Printed / screenshot content uses fluent English without wiping it as a
     hallucination (handwriting path still guards against invented sentences).
+    IAM showcase lines are also fluent English — pass allow_fluent_english=True
+    so real TrOCR predictions are not cleared as hallucinations.
     """
     path = Path(image_path)
     if not path.is_file():
@@ -204,7 +207,7 @@ def recognize_page_or_line(
 
     h, w = bgr.shape[:2]
     printed = bool(force_printed) or (auto_printed and looks_like_printed_text(bgr))
-    allow_fluent = printed
+    allow_fluent = printed if allow_fluent_english is None else bool(allow_fluent_english)
     tokens = max_new_tokens if max_new_tokens is not None else (128 if printed else 64)
     # Handwriting: more beams improves character fidelity (CER) on unknown docs.
     # Printed screenshots stay at 5 — fluent layout benefits less from extra beams.

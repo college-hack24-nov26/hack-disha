@@ -1,0 +1,114 @@
+{
+  "title": "Verified IAM sample showcase",
+  "story": "Handwriting lines from Hugging Face Teklia/IAM-line. Each card pairs a stable sample ID with its image and official IAM transcription. Recognize runs real TrOCR; the model prediction is shown separately from the verified reference.",
+  "pack_source": "iam",
+  "checkpoint_hint": "trocr-small-handwritten",
+  "primary_metric": "exact_match",
+  "verified_on_checkpoint": "checkpoints/trocr-small-handwritten",
+  "online_source": "https://huggingface.co/datasets/Teklia/IAM-line",
+  "source_note": "IAM ground truth is reference text, not a model claim.",
+  "samples": [
+    {
+      "id": "online_01.png",
+      "sample_id": "online_01",
+      "label": "1 · director of garages",
+      "stage": "online_iam",
+      "expected_text": "He is also a director of a couple of garages . And he finds time as well to be a lyric",
+      "why": "Teklia/IAM-line test hf_index=6. Official IAM transcription.",
+      "source": "https://huggingface.co/datasets/Teklia/IAM-line",
+      "hf_index": 6
+    },
+    {
+      "id": "online_02.png",
+      "sample_id": "online_02",
+      "label": "2 · possessive mother",
+      "stage": "online_iam",
+      "expected_text": "She plays the possessive mother of a man whose hobby revolves",
+      "why": "Teklia/IAM-line test hf_index=10. Official IAM transcription.",
+      "source": "https://huggingface.co/datasets/Teklia/IAM-line",
+      "hf_index": 10
+    },
+    {
+      "id": "online_03.png",
+      "sample_id": "online_03",
+      "label": "3 · everyday articles",
+      "stage": "online_iam",
+      "expected_text": "They will be asked to comment on the design of everyday articles",
+      "why": "Teklia/IAM-line test hf_index=16. Official IAM transcription.",
+      "source": "https://huggingface.co/datasets/Teklia/IAM-line",
+      "hf_index": 16
+    },
+    {
+      "id": "online_04.png",
+      "sample_id": "online_04",
+      "label": "4 · chair and motor-car",
+      "stage": "online_iam",
+      "expected_text": "such as a chair and a motor-car . The idea is to see what happens when",
+      "why": "Teklia/IAM-line test hf_index=18. Official IAM transcription.",
+      "source": "https://huggingface.co/datasets/Teklia/IAM-line",
+      "hf_index": 18
+    },
+    {
+      "id": "online_05.png",
+      "sample_id": "online_05",
+      "label": "5 · hypnosis",
+      "stage": "online_iam",
+      "expected_text": "parts of the mind not normally available without hypnosis are used .",
+      "why": "Teklia/IAM-line test hf_index=20. Official IAM transcription.",
+      "source": "https://huggingface.co/datasets/Teklia/IAM-line",
+      "hf_index": 20
+    },
+    {
+      "id": "online_06.png",
+      "sample_id": "online_06",
+      "label": "6 · regarded as a machine",
+      "stage": "online_iam",
+      "expected_text": "man could only be regarded as a machine .",
+      "why": "Teklia/IAM-line test hf_index=23. Official IAM transcription.",
+      "source": "https://huggingface.co/datasets/Teklia/IAM-line",
+      "hf_index": 23
+    },
+    {
+      "id": "online_07.png",
+      "sample_id": "online_07",
+      "label": "7 · topicality of African",
+      "stage": "online_iam",
+      "expected_text": "the switch because of the topicality of African",
+      "why": "Teklia/IAM-line test hf_index=25. Official IAM transcription.",
+      "source": "https://huggingface.co/datasets/Teklia/IAM-line",
+      "hf_index": 25
+    },
+    {
+      "id": "online_08.png",
+      "sample_id": "online_08",
+      "label": "8 · Brogan / Delaney",
+      "stage": "online_iam",
+      "expected_text": "Dennis Brogan , Shelagh Delaney , and Alan Sillitoe .",
+      "why": "Teklia/IAM-line test hf_index=40. Official IAM transcription.",
+      "source": "https://huggingface.co/datasets/Teklia/IAM-line",
+      "hf_index": 40
+    },
+    {
+      "id": "online_09.png",
+      "sample_id": "online_09",
+      "label": "9 · film covered",
+      "stage": "online_iam",
+      "expected_text": "The film covered a wide aspect of the British",
+      "why": "Teklia/IAM-line test hf_index=43. Official IAM transcription.",
+      "source": "https://huggingface.co/datasets/Teklia/IAM-line",
+      "hf_index": 43
+    },
+    {
+      "id": "online_10.png",
+      "sample_id": "online_10",
+      "label": "10 · Guest programmes",
+      "stage": "online_iam",
+      "expected_text": "Guest \" programmes because of an electricians'",
+      "why": "Teklia/IAM-line test hf_index=44. Official IAM transcription.",
+      "source": "https://huggingface.co/datasets/Teklia/IAM-line",
+      "hf_index": 44
+    }
+  ],
+  "verified_exact_pct": null,
+  "note": "verified_exact_pct left null so the UI does not claim model accuracy from IAM ground truth. Cards are verified only when expected_text is present for that sample_id."
+}

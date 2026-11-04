@@ -36,10 +36,10 @@
       <div class="panel-head compact">
         <div>
           <h2>Recognize</h2>
-          <p class="lead short">Upload handwriting · edit draft · score by WER</p>
+          <p class="lead short">Verified IAM samples · real TrOCR prediction · edit draft</p>
         </div>
       </div>
-      <div class="sample-row" id="sampleRow" aria-label="Quick test samples"></div>
+      <div class="sample-row" id="sampleRow" aria-label="Verified IAM samples"></div>
       <div class="grid-2 recog-layout">
         <div class="work-col">
           <div class="section-block tight">
@@ -68,7 +68,8 @@
             </details>
             <div class="btn-row">
               <button class="btn btn-primary" id="btnRecognize" type="button">Recognize</button>
-              <button class="btn" id="btnCopyDraft" type="button">Copy</button>
+              <button class="btn" id="btnCopyDraft" type="button">Copy prediction</button>
+              <button class="btn" id="btnCopyReference" type="button">Copy reference</button>
               <button class="btn" id="btnSaveCorrection" type="button">Save correction</button>
             </div>
             <p class="metric-chip hidden" id="recCerBox" aria-live="polite"></p>
@@ -80,15 +81,37 @@
           <div class="preview-box compact-preview" id="recPreview"><p class="muted">Preview</p></div>
         </div>
         <div class="work-col">
-          <div class="result-box draft-panel">
+          <div class="result-box draft-panel compact-result">
             <div class="result-head">
               <div>
-                <strong>Draft</strong>
+                <strong>Recognition</strong>
                 <span class="muted" id="recTime"></span>
+                <span class="muted small" id="recSampleId"></span>
               </div>
               <span class="draft-badge">Review required</span>
             </div>
-            <textarea id="recText" placeholder="Draft transcription…"></textarea>
+            <div class="recog-compact" id="recCompact" aria-live="polite">
+              <div class="recog-row">
+                <span class="recog-k">Model prediction</span>
+                <span class="recog-v" id="recPrediction">—</span>
+              </div>
+              <div class="recog-row" id="recReferenceRow">
+                <span class="recog-k">Verified reference</span>
+                <span class="recog-v" id="recReference">—</span>
+              </div>
+              <div class="recog-row hidden" id="recDiffRow">
+                <span class="recog-k">Difference</span>
+                <span class="recog-v warn" id="recDiff">—</span>
+              </div>
+              <div class="recog-row hidden" id="recConfidenceRow">
+                <span class="recog-k">Confidence</span>
+                <span class="recog-v" id="recConfidence">—</span>
+              </div>
+            </div>
+            <details class="draft-details">
+              <summary>Editable draft</summary>
+              <textarea id="recText" rows="3" placeholder="Model prediction (editable)…"></textarea>
+            </details>
             <p class="muted small" id="recNote"></p>
             <div id="recLines" class="rec-lines hidden" aria-live="polite"></div>
             <details class="meta-details">
