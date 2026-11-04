@@ -235,6 +235,7 @@ class Handler(BaseHTTPRequestHandler):
 
         if path == "/api/health":
             ckpt, pct, reason = resolve_active_checkpoint()
+            mean_cer = round(100.0 - float(pct), 2) if pct is not None else None
             status, body, ctype = json_bytes(
                 {
                     "ok": True,
@@ -242,8 +243,11 @@ class Handler(BaseHTTPRequestHandler):
                     "storage": "Local testing workspace — not the production DISHA database",
                     "active_checkpoint": str(ckpt),
                     "heldout_char_accuracy_pct": pct,
+                    "heldout_mean_cer_pct": mean_cer,
+                    "primary_metric": "cer",
                     "heldout_char_accuracy_pct_base": 14.01,
                     "target_char_accuracy_pct": "70-80% held-out character accuracy",
+                    "target_mean_cer_pct": "20-30% mean CER on held-out",
                     "checkpoint_reason": reason,
                     "model_loaded": _loaded is not None,
                     "ts": utc_now(),
@@ -701,15 +705,31 @@ class Handler(BaseHTTPRequestHandler):
             status, body, ctype = json_bytes({"error": "empty_correction"}, 400)
             return self._send(status, body, ctype)
         rid = f"correction_{datetime.now().strftime('%Y%m%d_%H%M%S')}_{uuid.uuid4().hex[:8]}"
+        original = str(data.get("originalText") or "")[:2000]
+        from disha_htr.metrics import pair_error_rates
+
+        # Clinician-corrected text is the reference; draft is the hypothesis.
+        # Unknown-doc quality is judged primarily by CER (character fidelity).
+        rates = pair_error_rates(draft[:4000], original)
         record = {
             "id": rid,
             "type": "transcription_correction",
             "createdAt": utc_now(),
-            "originalText": str(data.get("originalText") or "")[:2000],
+            "originalText": original,
             "correctedText": draft[:4000],
             "filename": str(data.get("filename") or "")[:200],
             "checkpoint": str(data.get("checkpoint") or ""),
-            "note": "Clinician correction for testing/improvement — local only.",
+            "metrics": {
+                "cer": rates["cer"],
+                "wer": rates["wer"],
+                "char_accuracy": rates["char_accuracy"],
+                "cer_pct": round(float(rates["cer"]) * 100.0, 2),
+                "wer_pct": round(float(rates["wer"]) * 100.0, 2),
+                "char_accuracy_pct": round(float(rates["char_accuracy"]) * 100.0, 2),
+                "primary": "cer",
+                "cer_worse_than_wer": rates["cer_worse_than_wer"],
+            },
+            "note": "Clinician correction for testing/improvement — local only. CER is the primary quality signal.",
             "storageNote": "Local testing only — not the production DISHA database.",
         }
         out = DEMO_DATA / "corrections" / f"{rid}.json"

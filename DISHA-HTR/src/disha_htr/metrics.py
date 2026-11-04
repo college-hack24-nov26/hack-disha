@@ -91,6 +91,19 @@ def exact_match(reference: str, hypothesis: str) -> bool:
     return normalize_text(reference) == normalize_text(hypothesis)
 
 
+def pair_error_rates(reference: str, hypothesis: str) -> dict[str, float | bool]:
+    """CER-first scores for one (reference, hypothesis) pair."""
+    cer = character_error_rate(reference, hypothesis)
+    wer = word_error_rate(reference, hypothesis)
+    return {
+        "cer": round(cer, 6),
+        "wer": round(wer, 6),
+        "char_accuracy": round(1.0 - cer, 6),
+        "exact_match": exact_match(reference, hypothesis),
+        "cer_worse_than_wer": bool(cer > wer),
+    }
+
+
 def aggregate_scores(
     pairs: Iterable[tuple[str, str]],
 ) -> dict[str, float | int | None]:
@@ -98,6 +111,7 @@ def aggregate_scores(
     Aggregate CER/WER/exact-match over (reference, hypothesis) pairs.
 
     Empty iterable → metrics are None (caller must not invent zeros as accuracy).
+    Primary quality signal for this project is CER (character fidelity).
     """
     refs_hyps = list(pairs)
     n = len(refs_hyps)
@@ -106,6 +120,7 @@ def aggregate_scores(
             "count": 0,
             "cer_mean": None,
             "wer_mean": None,
+            "char_accuracy_mean": None,
             "exact_match_accuracy": None,
         }
 
@@ -118,9 +133,11 @@ def aggregate_scores(
         if exact_match(ref, hyp):
             exact_n += 1
 
+    cer_mean = cer_sum / n
     return {
         "count": n,
-        "cer_mean": round(cer_sum / n, 6),
+        "cer_mean": round(cer_mean, 6),
         "wer_mean": round(wer_sum / n, 6),
+        "char_accuracy_mean": round(1.0 - cer_mean, 6),
         "exact_match_accuracy": round(exact_n / n, 6),
     }

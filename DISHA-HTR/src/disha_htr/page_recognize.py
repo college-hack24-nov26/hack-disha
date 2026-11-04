@@ -206,7 +206,9 @@ def recognize_page_or_line(
     printed = bool(force_printed) or (auto_printed and looks_like_printed_text(bgr))
     allow_fluent = printed
     tokens = max_new_tokens if max_new_tokens is not None else (128 if printed else 64)
-    beams = 5 if printed else 4
+    # Handwriting: more beams improves character fidelity (CER) on unknown docs.
+    # Printed screenshots stay at 5 — fluent layout benefits less from extra beams.
+    beams = 5 if printed else 6
     content_type = "printed" if printed else "handwriting"
 
     # Only skip page split when the caller explicitly asks for single-line mode.

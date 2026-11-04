@@ -102,7 +102,7 @@
             </label>
             <label class="field check">
               <input type="checkbox" id="recAutoPrinted" checked />
-              <span>Auto-detect printed screenshots <em>(recommended for employment tables &amp; web captures)</em></span>
+              <span>Auto-detect printed screenshots <em>(conservative — phone handwriting stays on handwriting OCR)</em></span>
             </label>
             <label class="field check">
               <input type="checkbox" id="recAuto" checked />
@@ -113,6 +113,7 @@
               <button class="btn" id="btnCopyDraft" type="button">Copy draft</button>
               <button class="btn" id="btnSaveCorrection" type="button">Save correction</button>
             </div>
+            <p class="muted small hidden" id="recCerBox" aria-live="polite"></p>
             <div class="progress hidden" id="recProgress" aria-live="polite">
               <div class="progress-bar"></div>
               <p id="recProgressText">Working…</p>

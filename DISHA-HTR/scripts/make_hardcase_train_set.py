@@ -34,7 +34,8 @@ FONT_CANDIDATES = [
     Path(r"C:\Windows\Fonts\arial.ttf"),
 ]
 
-# Phrase bank aimed at held-out failure modes (style match, not image leak).
+# Phrase bank aimed at held-out + unknown-doc CER failure modes
+# (character substitutions inside words; style match, not image leak).
 PHRASES = [
     "how are you",
     "How are you",
@@ -67,9 +68,24 @@ PHRASES = [
     "I am Bidar town",
     "my Name is hemanth Kumar",
     "my name IS HEMANTH kumar",
+    "my Name is hemanth",
     "Can I know",
     "Hello we are pleased to",
     "meet you.",
+    # Unknown-doc / WhatsApp notebook CER focus (GT == rendered text).
+    "we are participating in hackathon competition",
+    "we are participating",
+    "hackathon competition",
+    "Ghatboral",
+    "Ghatboral Iq",
+    "boral",
+    "HEMANTH KUMAR",
+    "H E M A N T H",
+    "started",
+    "practicing",
+    "attended",
+    "receipt",
+    "offer",
 ]
 
 
@@ -144,8 +160,12 @@ def main() -> int:
         )
         writer.writeheader()
         writer.writerows(rows)
-    print(f"wrote {len(rows)} hard-case lines → {OUT}")
-    print(f"fonts_used={len(fonts)} train={sum(1 for r in rows if r['split']=='train')} val={sum(1 for r in rows if r['split']=='val')}")
+    print(f"wrote {len(rows)} hard-case lines -> {OUT}")
+    print(
+        f"fonts_used={len(fonts)} "
+        f"train={sum(1 for r in rows if r['split']=='train')} "
+        f"val={sum(1 for r in rows if r['split']=='val')}"
+    )
     return 0
 
 

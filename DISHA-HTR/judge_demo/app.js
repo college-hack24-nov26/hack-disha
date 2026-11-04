@@ -78,12 +78,20 @@
         health.heldout_char_accuracy_pct != null
           ? health.heldout_char_accuracy_pct
           : health.heldout_char_accuracy_pct_base;
+      const cer =
+        health.heldout_mean_cer_pct != null
+          ? health.heldout_mean_cer_pct
+          : acc != null
+            ? Math.round((100 - Number(acc)) * 100) / 100
+            : null;
       $("healthBanner").innerHTML =
         `<span class="ok">Service online</span> · ` +
-        `live workspace · ${modelReady} · held-out accuracy ` +
-        `<strong>${acc}%</strong>`;
+        `live workspace · ${modelReady} · held-out CER ` +
+        `<strong>${cer}%</strong>` +
+        ` · char acc <strong>${acc}%</strong>`;
       if ($("livePillText")) {
-        $("livePillText").textContent = `Live · ${acc}% held-out`;
+        $("livePillText").textContent =
+          cer != null ? `Live · CER ${cer}%` : `Live · ${acc}% held-out`;
       }
       const ck = await getJSON("/api/checkpoint");
       $("checkpointInfo").textContent =
@@ -265,10 +273,15 @@
         null,
         2
       );
+      const contentType =
+        (data.recognition && data.recognition.content_type) || "handwriting";
+      const selSrc = (data.selection && data.selection.source) || "";
       setStatus(
         $("recStatus"),
         text
-          ? "Recognition finished — edit the draft if needed, then save correction."
+          ? `Recognition finished (${contentType}` +
+              (selSrc ? ` · ${selSrc}` : "") +
+              "). Edit the draft, then save correction — CER is the primary score."
           : "No reliable combined draft — check per-line results or try a sentence crop.",
         text ? "ok" : "warn"
       );
@@ -322,7 +335,30 @@
           checkpoint: lastCheckpoint,
         }),
       });
-      setStatus($("recStatus"), "Correction saved locally as " + data.record.id, "ok");
+      const m = (data.record && data.record.metrics) || {};
+      const cerPct = m.cer_pct != null ? m.cer_pct : null;
+      const werPct = m.wer_pct != null ? m.wer_pct : null;
+      const cerNote =
+        cerPct != null
+          ? ` CER ${cerPct}%` +
+            (werPct != null ? ` (WER ${werPct}%)` : "") +
+            (m.cer_worse_than_wer ? " — character errors dominate" : "")
+          : "";
+      setStatus(
+        $("recStatus"),
+        "Correction saved as " + data.record.id + "." + cerNote,
+        "ok"
+      );
+      if ($("recCerBox")) {
+        $("recCerBox").classList.remove("hidden");
+        $("recCerBox").innerHTML =
+          cerPct != null
+            ? `<strong>CER ${cerPct}%</strong>` +
+              (werPct != null ? ` · WER ${werPct}%` : "") +
+              ` · char acc ${m.char_accuracy_pct != null ? m.char_accuracy_pct : "—"}%` +
+              `<span class="muted"> · primary metric is CER on unknown docs</span>`
+            : "";
+      }
       refreshRecords();
     } catch (err) {
       setStatus($("recStatus"), "Save failed: " + err.message, "warn");

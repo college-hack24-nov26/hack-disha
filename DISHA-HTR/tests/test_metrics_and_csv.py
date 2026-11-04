@@ -28,6 +28,7 @@ from disha_htr.metrics import (  # noqa: E402
     character_error_rate,
     exact_match,
     levenshtein_distance,
+    pair_error_rates,
     word_error_rate,
 )
 
@@ -55,13 +56,21 @@ class TestMetrics(unittest.TestCase):
         self.assertEqual(empty["count"], 0)
         self.assertIsNone(empty["cer_mean"])
         self.assertIsNone(empty["wer_mean"])
+        self.assertIsNone(empty["char_accuracy_mean"])
         self.assertIsNone(empty["exact_match_accuracy"])
 
     def test_aggregate_nonzero(self) -> None:
         scored = aggregate_scores([("abc", "abc"), ("abc", "abd")])
         self.assertEqual(scored["count"], 2)
         self.assertIsNotNone(scored["cer_mean"])
+        self.assertIsNotNone(scored["char_accuracy_mean"])
         self.assertLess(scored["exact_match_accuracy"], 1.0)
+
+    def test_pair_error_rates_cer_primary(self) -> None:
+        rates = pair_error_rates("my Name is hemanth", "MAY NONE 4 REWARDMENTS")
+        self.assertGreater(rates["cer"], rates["wer"])
+        self.assertTrue(rates["cer_worse_than_wer"])
+        self.assertIn("char_accuracy", rates)
 
 
 class TestGroundTruthCsv(unittest.TestCase):
